@@ -1,0 +1,36 @@
+{
+	"geode": "3.4.0",
+	"gd": {
+		"win": "2.206",
+		"android": "2.206",
+		"mac": "2.206",
+		"ios": "2.206"
+	},
+	"id": "techstudent10.creation_rotation",
+	"name": "Creation Rotation",
+	"version": "v1.0.0",
+	"developer": "TechStudent10",
+	"description": "Mod inspired by Wulzy's Level Swap series on YouTube",
+	"resources": {
+		"sprites": [
+			"resources/*.png"
+		]
+	},
+	"dependencies": [
+		{
+			"id": "cvolton.level-id-api",
+			"version": "v1.0.1",
+			"importance": "required"
+		},
+		{
+            "id": "hjfod.gmd-api",
+            "version": ">=v1.0.1",
+            "importance": "required"
+        },
+		{
+            "id": "geode.node-ids",
+            "version": "v1.14.0",
+            "importance": "required"
+        }
+	]
+}
