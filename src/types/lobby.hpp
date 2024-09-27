@@ -1,20 +1,21 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <matjson.hpp>
 
-// #define JSON_PROP(__name) {#__name, matjson::Value(__name)}
-// #define JSON_PROP_WITH_NAME(__name, __value) {#__name, __value}
-
-// #define JSON_STRUCT(...) std::string toJson() { \
-//     return matjson::Value({__VA_ARGS__}).dump(); \
-//     }
+#include <serialization.hpp>
 
 struct LobbySettings {
     std::string name;
     int turns;
     int owner;
     int minutesPerTurn;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(name),
+        CEREAL_NVP(turns),
+        CEREAL_NVP(owner),
+        CEREAL_NVP(minutesPerTurn)
+    )
 };
 
 struct Account {
@@ -24,10 +25,25 @@ struct Account {
     std::string color1;
     std::string color2;
     std::string color3;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(name),
+        CEREAL_NVP(userID),
+        CEREAL_NVP(iconID),
+        CEREAL_NVP(color1),
+        CEREAL_NVP(color2),
+        CEREAL_NVP(color3)
+    )
 };
 
 struct LobbyInfo {
     std::string code;
     LobbySettings settings;
     std::vector<Account> accounts;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(code),
+        CEREAL_NVP(settings),
+        CEREAL_NVP(accounts)
+    )
 };

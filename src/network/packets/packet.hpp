@@ -1,7 +1,8 @@
 #pragma once
-#include <sio_client.h>
-#include <map>
 #include <string>
+#include <serialization.hpp>
+
+#define CR_ARGS(...) __VA_ARGS__
 
 #define CR_PACKET(id, name) \
     public: \
@@ -12,28 +13,36 @@
         template<typename... Args> \
         static name* create(Args ...args) { \
             return new name(args...); \
-        }; \
-        sio::message::ptr encode() override { \
-            auto msg = sio::object_message::create(); \
-            msg->get_map() = this->members; \
-            return msg; \
         } \
-        void decode(sio::message::ptr msg) override { \
-            this->from_msg(msg); \
-        }
+        void decode(std::string in) override { \
+            \
+        } \
+        name() {}
 
 class Packet {
 public:
     static const int PACKET_ID = 0000;
 
+    virtual void decode(std::string) = 0;
+
     virtual int getPacketID() const = 0; 
     virtual const char* getPacketName() const = 0;
-
-    virtual sio::message::ptr encode() = 0;
-    virtual void decode(sio::message::ptr) = 0;
-
-    virtual void from_msg(sio::message::ptr) = 0;
-protected:
-    std::map<std::string, sio::message::ptr> members;
 };
+
+// CR_SPACKET(Packet, PACKET_ARG(PACKET_ID));
+
+// dont mind me just testing the syntax (istg if someone actually uses this)
+
+class TestPacket : public Packet {
+    CR_PACKET(0001, TestPacket)
+
+    TestPacket(std::string hello, std::string world):
+        hello(hello),
+        world(world) {}
+
+    std::string hello;
+    std::string world;
+
+    CR_SERIALIZE(hello, world)
+};  
 

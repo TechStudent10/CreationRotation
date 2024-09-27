@@ -1,4 +1,5 @@
-import { Socket } from "socket.io"
+// import { Socket } from "socket.io"
+import WebSocket from "ws"
 
 // iconID, color1-3 should be integers but for
 // the sake of maintaining sanity while working
@@ -37,16 +38,16 @@ export interface ServerToClientEvents {
     //     packet_id: number
     //     [key: string]: any
     // }) => {}
-    "1001": (args: {info: Lobby}) => void
-    "1002": (args: {accounts: Account[]}) => void
-    "1003": (args: {info: Lobby}) => void
-    "1004": (args: {info: Lobby}) => void
-    "1005": (args: {accounts: Array<{ index: number, accID: string }>}) => void
-    "1006": () => void
-    "1007": () => void
-    "3002": (args: {levels: Array<string>}) => void
-    "3003": () => void
-    "4001": (args: { error: string }) => void
+    "1001": {info: Lobby}
+    "1002": {accounts: Account[]}
+    "1003": {info: Lobby}
+    "1004": {info: Lobby}
+    "1005": {accounts: Array<{ index: number, accID: string }>}
+    "1006": {}
+    "1007": {}
+    "3002": {levels: Array<string>}
+    "3003": {}
+    "4001": { error: string }
 }
 
 export interface ClientToServerEvents {
@@ -58,45 +59,45 @@ export interface ClientToServerEvents {
 
 export interface InterServerEvents {}
 export interface SocketData {
-    currentLobbyCode: string
-    account: Account
+    currentLobbyCode?: string
+    account?: Account
 }
 
-export type SocketConnection = Socket<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
->
+// export type SocketConnection = Socket<
+//     ClientToServerEvents,
+//     ServerToClientEvents,
+//     InterServerEvents,
+//     SocketData
+// >
 
 export interface PacketHandlers {
     // CreateLobbyPacket (response: LobbyCreatedPacket)
-    2001: (socket: SocketConnection, args: LobbySettings) => void
+    2001: (socket: WebSocket, args: { settings: LobbySettings}, data: SocketData) => void
     // JoinLobbyPacket
-    2002: (socket: SocketConnection, args: {
+    2002: (socket: WebSocket, args: {
         code: string,
         account: Account
-    }) => void
+    }, data: SocketData) => void
     // GetAccountsPacket (response: RecieveAccountsPacket)
-    2003: (socket: SocketConnection, args: {
+    2003: (socket: WebSocket, args: {
         code: string
-    }) => void
+    }, data: SocketData) => void
     // GetLobbyInfoPacket (response: RecieveLobbyInfoPacket)
-    2004: (socket: SocketConnection, args: {
+    2004: (socket: WebSocket, args: {
         code: string
-    }) => void
+    }, data: SocketData) => void
     // DisconnectFromLobbyPacket
-    2005: (socket: SocketConnection) => void
+    2005: (socket: WebSocket, args: {}, data: SocketData) => void
     // UpdateLobbyPacket
-    2006: (socket: SocketConnection, args: { code: string } & LobbySettings) => void
+    2006: (socket: WebSocket, args: { code: string, settings: LobbySettings}, data: SocketData) => void
     // StartSwapPacket
-    2007: (socket: SocketConnection) => void
+    2007: (socket: WebSocket, args: {}, data: SocketData) => void
     // SendLevelPacket
-    3001: (socket: SocketConnection, args: {
+    3001: (socket: WebSocket, args: {
         code: string
         accIdx: number
         lvlStr: string
-    }) => void
+    }, data: SocketData) => void
 
     [key: number]: Function
 }

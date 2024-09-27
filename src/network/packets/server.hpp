@@ -9,136 +9,114 @@ using namespace cr::utils;
 class LobbyCreatedPacket : public Packet {
     CR_PACKET(1001, LobbyCreatedPacket)
 
-    LobbyCreatedPacket() {}
-    LobbyCreatedPacket(LobbyInfo info): info(info) {} // doesn't need to impl'd
+    LobbyCreatedPacket(LobbyInfo info):
+        info(info) {}
 
     LobbyInfo info;
 
-    void from_msg(sio::message::ptr msg) override {
-        auto map = msg->get_map()["info"]->get_map();
-        info.code = map["code"]->get_string();
-
-        info.settings = getSettingsFromMsgMap(map["settings"]->get_map());
-        info.accounts = getAccountsFromMsgVector(map["accounts"]->get_vector());
-    }
+    CR_SERIALIZE(
+        CEREAL_NVP(info)
+    )
 };
 
 class RecieveAccountsPacket : public Packet {
-    CR_PACKET(1002, RecieveAccountsPacket);
+    CR_PACKET(1002, RecieveAccountsPacket)
 
-    RecieveAccountsPacket() {}
-    RecieveAccountsPacket(std::vector<Account> accounts) : accounts(accounts) {}
+    RecieveAccountsPacket(std::vector<Account> accounts):
+        accounts(accounts) {}
 
     std::vector<Account> accounts;
 
-    void from_msg(sio::message::ptr msg) override {
-        accounts = getAccountsFromMsgVector(msg->get_map()["accounts"]->get_vector());
-    }
+    CR_SERIALIZE(
+        CEREAL_NVP(accounts)
+    )
 };
 
 class RecieveLobbyInfoPacket : public Packet {
-    CR_PACKET(1003, RecieveLobbyInfoPacket);
+    CR_PACKET(1003, RecieveLobbyInfoPacket)
 
-    RecieveLobbyInfoPacket() {}
-    RecieveLobbyInfoPacket(LobbyInfo info) : info(info) {}
+    RecieveLobbyInfoPacket(LobbyInfo info):
+        info(info) {}
 
     LobbyInfo info;
 
-    void from_msg(sio::message::ptr msg) override {
-        auto response = msg->get_map()["info"]->get_map();
-
-        info.code = response["code"]->get_string();
-
-        info.accounts = getAccountsFromMsgVector(response["accounts"]->get_vector());
-        info.settings = getSettingsFromMsgMap(response["settings"]->get_map());
-    }
+    CR_SERIALIZE(
+        CEREAL_NVP(info)
+    )
 };
 
 class LobbyUpdatedPacket : public Packet {
     CR_PACKET(1004, LobbyUpdatedPacket)
 
-    LobbyUpdatedPacket() {}
-    LobbyUpdatedPacket(LobbyInfo info) : info(info) {}
+    LobbyUpdatedPacket(LobbyInfo info):
+        info(info) {}
 
     LobbyInfo info;
 
-    void from_msg(sio::message::ptr msg) override {
-        if (msg) {
-            auto response = msg->get_map()["info"]->get_map();
-
-            info.code = response["code"]->get_string();
-
-            info.accounts = getAccountsFromMsgVector(response["accounts"]->get_vector());
-            info.settings = getSettingsFromMsgMap(response["settings"]->get_map());
-        }
-    }
+    CR_SERIALIZE(
+        CEREAL_NVP(info)
+    )
 };
 
 class JoinedLobbyPacket : public Packet {
     CR_PACKET(1007, JoinedLobbyPacket)
 
-    JoinedLobbyPacket() {}
+    std::string dummy;
 
-    void from_msg(sio::message::ptr) override {}
+    CR_SERIALIZE(dummy)
 };
-
 // LEVEL SWAP //
+
+struct AccWithIndex {
+    int index;
+    std::string accID;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(index),
+        CEREAL_NVP(accID)
+    )
+};
 
 class SwapStartedPacket : public Packet {
     CR_PACKET(1005, SwapStartedPacket)
 
-    struct AccWithIndex {
-        int index;
-        std::string accID;
-    };
-
     using Accounts = std::vector<AccWithIndex>;
 
-    SwapStartedPacket() {}
-    SwapStartedPacket(Accounts accounts) : accounts(accounts) {}
+    SwapStartedPacket(Accounts accounts):
+        accounts(accounts) {}
 
     Accounts accounts;
 
-    void from_msg(sio::message::ptr msg) override {
-        auto responses = msg->get_map()["accounts"]->get_vector();
-        for (auto response : responses) {
-            accounts.push_back({
-                .index = static_cast<int>(response->get_map()["index"]->get_int()),
-                .accID = response->get_map()["accID"]->get_string()
-            });
-        }
-    }
+    CR_SERIALIZE(
+        CEREAL_NVP(accounts)
+    )
 };
 
 class TimeToSwapPacket : public Packet {
     CR_PACKET(1006, TimeToSwapPacket)
 
-    TimeToSwapPacket() {}
+    std::string dummy;
 
-    void from_msg(sio::message::ptr msg) override {}
+    CR_SERIALIZE(dummy)
 };
 
 class RecieveSwappedLevelPacket : public Packet {
     CR_PACKET(3002, RecieveSwappedLevelPacket)
 
-    RecieveSwappedLevelPacket() {}
-    RecieveSwappedLevelPacket(std::vector<std::string_view> levels): levels(levels) {}
+    RecieveSwappedLevelPacket(std::vector<std::string> levels):
+        levels(levels) {}
 
-    std::vector<std::string_view> levels;
+    std::vector<std::string> levels;
 
-    void from_msg(sio::message::ptr msg) override {
-        for (auto strMsg : msg->get_map()["levels"]->get_vector()) {
-            levels.push_back(strMsg->get_string());
-        }
-    }
+    CR_SERIALIZE(
+        CEREAL_NVP(levels)
+    )
 };
 
 class SwapEndedPacket : public Packet {
     CR_PACKET(3003, SwapEndedPacket)
 
-    SwapEndedPacket() {}
-
-    void from_msg(sio::message::ptr) override {}
+    CR_SERIALIZE()
 };
 
 // OTHER STUFF //
@@ -146,14 +124,12 @@ class SwapEndedPacket : public Packet {
 class ErrorPacket : public Packet {
     CR_PACKET(4001, ErrorPacket)
 
-    ErrorPacket() {}
-    ErrorPacket(std::string errorStr) : errorStr(errorStr) {}
+    ErrorPacket(std::string error):
+        error(error) {}
     
-    std::string errorStr;
+    std::string error;
 
-    void from_msg(sio::message::ptr msg) override {
-        if (msg) {
-            errorStr = msg->get_map()["error"]->get_string();
-        }
-    }
+    CR_SERIALIZE(
+        CEREAL_NVP(error)
+    )
 };

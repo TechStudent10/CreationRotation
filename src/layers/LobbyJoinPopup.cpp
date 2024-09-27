@@ -32,10 +32,11 @@ bool LobbyJoinPopup::setup() {
             this->onClose(sender);
 
             auto& lm = SwapManager::get();
-            lm.joinLobby(input->getString(), [input]() {
+            auto code = input->getString();
+            lm.joinLobby(code, [code]() {
                 auto scene = CCScene::create();
                 scene->addChild(
-                    LobbyLayer::create(input->getString())
+                    LobbyLayer::create(code)
                 );
                 cr::utils::goToScene(scene);
             });

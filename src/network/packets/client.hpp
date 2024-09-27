@@ -3,93 +3,87 @@
 
 #include <types/lobby.hpp>
 
-#define FROM_MSG() void from_msg(sio::message::ptr msg) override {}
-
 // response: LobbyCreatedPacket
-class CreateLobbyPacket : public Packet {
+class CreateLobbyPacket : public virtual Packet {
     CR_PACKET(2001, CreateLobbyPacket)
 
-    CreateLobbyPacket() {}
-    CreateLobbyPacket(LobbySettings settings) {
-        members["name"] = sio::string_message::create(settings.name);
-        members["turns"] = sio::int_message::create(settings.turns);
-        members["owner"] = sio::int_message::create(settings.owner);
-        members["minutesPerTurn"] = sio::int_message::create(settings.minutesPerTurn);
-    }
+    CreateLobbyPacket(LobbySettings settings):
+        settings(settings) {}
 
-    FROM_MSG()
+    LobbySettings settings;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(settings)
+    )
 };
 
+// response: JoinedLobbyPacket
 class JoinLobbyPacket : public Packet {
     CR_PACKET(2002, JoinLobbyPacket)
 
-    JoinLobbyPacket() {}
-    JoinLobbyPacket(std::string code, Account account) {
-        members["code"] = sio::string_message::create(code);
+    JoinLobbyPacket(std::string code, Account account):
+        code(code),
+        account(account) {}
+    
+    std::string code;
+    Account account;
 
-        std::map<std::string, sio::message::ptr> accountMap;
-        
-        #define STRMSG(str) sio::string_message::create(str)
-
-        accountMap["name"] = STRMSG(account.name);
-        accountMap["userID"] = STRMSG(account.userID);
-        accountMap["iconID"] = STRMSG(account.iconID);
-        accountMap["color1"] = STRMSG(account.color1);
-        accountMap["color2"] = STRMSG(account.color2);
-        accountMap["color3"] = STRMSG(account.color3);
-
-        members["account"] = sio::object_message::create();
-        members["account"]->get_map() = accountMap;
-    }
-
-    FROM_MSG()
+    CR_SERIALIZE(
+        CEREAL_NVP(code),
+        CEREAL_NVP(account)
+    )
 };
 
 // response: RecieveAccountsPacket
 class GetAccountsPacket : public Packet {
     CR_PACKET(2003, GetAccountsPacket)
 
-    GetAccountsPacket() {}
-    GetAccountsPacket(std::string code) {
-        members["code"] = sio::string_message::create(code);
-    }
+    GetAccountsPacket(std::string code):
+        code(code) {}
 
-    FROM_MSG()
+    std::string code;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(code)
+    )
 };
 
 // response: RecieveLobbyInfoPacket
 class GetLobbyInfoPacket : public Packet {
     CR_PACKET(2004, GetLobbyInfoPacket)
 
-    GetLobbyInfoPacket() {}
-    GetLobbyInfoPacket(std::string code) {
-        members["code"] = sio::string_message::create(code);
-    }
+    GetLobbyInfoPacket(std::string code):
+        code(code) {}
 
-    FROM_MSG()
+    std::string code;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(code)
+    )
 };
 
 class DisconnectFromLobbyPacket : public Packet {
     CR_PACKET(2005, DisconnectFromLobbyPacket)
 
-    DisconnectFromLobbyPacket() {}
+    std::string dummy;
 
-    FROM_MSG()
+    CR_SERIALIZE(dummy)
 };
 
 class UpdateLobbyPacket : public Packet {
-    CR_PACKET(2006, UpdateLobbyPacket);
+    CR_PACKET(2006, UpdateLobbyPacket)
 
-    UpdateLobbyPacket() {}
-    UpdateLobbyPacket(std::string code, LobbySettings settings) { 
-        members["code"] = sio::string_message::create(code);
-        members["name"] = sio::string_message::create(settings.name);
-        members["turns"] = sio::int_message::create(
-            settings.turns
-        );
-    }
+    UpdateLobbyPacket(std::string code, LobbySettings settings):
+        code(code),
+        settings(settings) {}
 
-    FROM_MSG()
+    std::string code;
+    LobbySettings settings;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(code),
+        CEREAL_NVP(settings)
+    )
 };
 
 // SWAPPING
@@ -97,27 +91,31 @@ class UpdateLobbyPacket : public Packet {
 class StartSwapPacket : public Packet {
     CR_PACKET(2007, StartSwapPacket)
 
-    StartSwapPacket() {}
-    StartSwapPacket(std::string code) {
-        members["code"] = sio::string_message::create(code);
-    }
+    StartSwapPacket(std::string code):
+        code(code) {}
 
-    FROM_MSG()
+    std::string code;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(code)
+    )
 };
 
 class SendLevelPacket : public Packet {
     CR_PACKET(3001, SendLevelPacket)
 
-    SendLevelPacket() {}
-    SendLevelPacket(std::string code, int accIdx, std::string lvlStr) : code(code), accIdx(accIdx), lvlStr(lvlStr) {
-        members["code"] = sio::string_message::create(code);
-        members["accIdx"] = sio::int_message::create(accIdx);
-        members["lvlStr"] = sio::string_message::create(lvlStr);
-    }
+    SendLevelPacket(std::string code, int accIdx, std::string lvlStr):
+        code(code),
+        accIdx(accIdx),
+        lvlStr(lvlStr) {}
 
     int accIdx;
-    std::string_view lvlStr;
-    std::string_view code;
+    std::string lvlStr;
+    std::string code;
 
-    FROM_MSG()
+    CR_SERIALIZE(
+        CEREAL_NVP(accIdx),
+        CEREAL_NVP(lvlStr),
+        CEREAL_NVP(code)
+    )
 };

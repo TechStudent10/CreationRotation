@@ -6,10 +6,6 @@
 #include <layers/LobbySelectPopup.hpp>
 
 #include <network/manager.hpp>
-#include <network/packets/server.hpp>
-#include <network/packets/client.hpp>
-
-#include <managers/SwapManager.hpp>
 
 using namespace geode::prelude;
 
@@ -41,30 +37,8 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 	}
 
 	void onMyButton(CCObject*) {
+		NetworkManager::get().connect();
 		LobbySelectPopup::create()->show();
 	}
 };
 
-// class $modify(CREditorLayer, LevelEditorLayer) {
-// 	bool init(GJGameLevel* level, bool smth) {
-// 		if (!LevelEditorLayer::init(level, smth)) return false;
-
-// 		auto& nm = NetworkManager::get();
-// 		auto& lm = SwapManager::get();
-// 		auto nspace = fmt::format("/{}", lm.currentLobbyCode);
-// 		nm.on<TimeToSwapPacket>([this, nspace](TimeToSwapPacket* p) {
-// 			auto& lm = SwapManager::get();
-// 			auto& nm = NetworkManager::get();
-// 			log::info("maybe?");
-// 			nm.send(
-// 				SendLevelPacket::create(lm.currentLobbyCode, lm.swapIdx, this->getLevelString())
-// 			);
-// 		}, nspace);
-// 		nm.on<RecieveSwappedLevelPacket>([this, lm](RecieveSwappedLevelPacket* packet) {
-// 			log::info("?????????");
-// 			log::info("{}", packet->levels[lm.swapIdx]);
-// 		}, nspace);
-
-// 		return true;
-// 	}
-// };

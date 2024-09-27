@@ -62,3 +62,6 @@ build-*/
 # CLion
 .idea/
 /cmake-build-*/
+
+node_modules/
+out/

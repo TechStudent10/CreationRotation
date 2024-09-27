@@ -20,7 +20,7 @@ SwapManager::SwapManager() {
     nm.on<ErrorPacket>([](ErrorPacket* packet) {
         FLAlertLayer::create(
             "CR Error",
-            fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet->errorStr).c_str(),
+            fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet->error).c_str(),
             "OK"
         )->show();
     });

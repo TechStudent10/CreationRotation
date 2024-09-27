@@ -166,6 +166,8 @@ bool LobbyLayer::init(std::string code) {
     });
     registerListeners();
 
+    log::debug("LobbyLayer setup!");
+
     return true;
 }
 
