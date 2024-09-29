@@ -2,8 +2,6 @@
 #include "SwapManager.hpp"
 
 #include <network/manager.hpp>
-#include <network/packets/client.hpp>
-#include <network/packets/server.hpp>
 
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include <hjfod.gmd-api/include/GMD.hpp>
@@ -60,7 +58,7 @@ void SwapManager::joinLobby(std::string code, std::function<void()> callback) {
     nm.on<JoinedLobbyPacket>([this, callback, code](auto) {
         this->currentLobbyCode = code;
         callback();
-    }, "", true);
+    }, true);
 }
 
 Account SwapManager::createAccountType() {
@@ -111,22 +109,48 @@ void SwapManager::disconnectLobby() {
 
     auto& nm = NetworkManager::get();
 
-    nm.send(DisconnectFromLobbyPacket::create());
+    // no longer needed
+    // nm.send(DisconnectFromLobbyPacket::create());
     nm.disconnect();
 }
 
 // LEVEL SWAP //
+
+void SwapManager::startSwap(SwapStartedPacket* packet) {
+    getLobbyInfo([this](LobbyInfo info) {
+        secondsPerRound = info.settings.minutesPerTurn * 60;
+    });
+
+    for (auto acc : packet->accounts) {
+        if (acc.accID != SwapManager::createAccountType().userID) continue;
+
+        swapIdx = acc.index;
+
+        auto glm = GameLevelManager::sharedState();
+        auto newLvl = glm->createNewLevel();
+
+        levelId = EditorIDs::getID(newLvl);
+
+        registerListeners();
+
+        roundStartedTime = time(0);
+
+        auto scene = EditLevelLayer::scene(newLvl);
+        cr::utils::replaceScene(scene);
+
+        break;
+    }
+}
 
 void SwapManager::registerListeners() {
     CR_REQUIRE_CONNECTION()
 
     auto& nm = NetworkManager::get();
 
-    auto nspace = fmt::format("/{}", currentLobbyCode);
-    nm.on<TimeToSwapPacket>([this, nspace](TimeToSwapPacket* p) {
+    nm.on<TimeToSwapPacket>([this](TimeToSwapPacket* p) {
         auto& nm = NetworkManager::get();
 
-        Notification::create("Swapping levels!", NotificationIcon::Info, 1.5f)->show();
+        Notification::create("Swapping levels!", NotificationIcon::Info, 2.5f)->show();
 
         auto filePath = std::filesystem::temp_directory_path() / fmt::format("temp{}.gmd", rand());
 
@@ -134,7 +158,9 @@ void SwapManager::registerListeners() {
             auto fakePauseLayer = EditorPauseLayer::create(editorLayer);
             fakePauseLayer->saveLevel();
         }
-        auto res = gmd::exportLevelAsGmd(EditorIDs::getLevelByID(levelId), filePath);
+        auto lvl = EditorIDs::getLevelByID(levelId);
+        lvl->m_levelDesc = fmt::format("from: {}", this->createAccountType().name);
+        auto res = gmd::exportLevelAsGmd(lvl, filePath);
 
         std::ifstream lvlIn(filePath);
         std::ostringstream levelStr;
@@ -143,10 +169,13 @@ void SwapManager::registerListeners() {
 
         std::filesystem::remove(filePath);
 
+        // let's not spam everyone's created levels list
+        GameLevelManager::sharedState()->deleteLevel(lvl);
+
         nm.send(
             SendLevelPacket::create(currentLobbyCode, swapIdx, levelStr.str())
         );
-    }, nspace);
+    });
     nm.on<RecieveSwappedLevelPacket>([this](RecieveSwappedLevelPacket* packet) {
         auto gmdStr = std::string(packet->levels[swapIdx]);
         log::info("{}", packet->levels[swapIdx]);
@@ -164,6 +193,25 @@ void SwapManager::registerListeners() {
             cr::utils::replaceScene(scene);
         }
 
+        roundStartedTime = time(0);
+
         std::filesystem::remove(filePath);
-    }, nspace);
+    });
+    nm.on<SwapEndedPacket>([this](SwapEndedPacket* p) {
+        log::debug("swap ended; disconnecting from server");
+        NetworkManager::get().disconnect();
+        FLAlertLayer::create(
+            "Creation Rotation",
+            "The Creation Rotation level swap has <cy>ended!</c>\nHope you had fun! :D\n\n<cl>You have been disconnected from the Creation Rotation server.</c>",
+            "OK"
+        )->show();
+    });
+}
+
+int SwapManager::getTimeRemaining() {
+    if (secondsPerRound <= 0) {
+        return 0;
+    }
+
+    return (roundStartedTime + secondsPerRound) - time(0);
 }

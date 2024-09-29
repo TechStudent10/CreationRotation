@@ -2,6 +2,8 @@
 #include <Geode/Geode.hpp>
 
 #include <types/lobby.hpp>
+#include <network/packets/client.hpp>
+#include <network/packets/server.hpp>
 
 class SwapManager {
 public:
@@ -25,10 +27,18 @@ public:
 
     // LEVEL SWAP //
 
+    int secondsPerRound;
+
+    int roundStartedTime;
+    int roundEndingTime;
+
     int swapIdx;
     int levelId;
 
+    void startSwap(SwapStartedPacket* packet);
+
     void registerListeners();
+    int getTimeRemaining();
 
 protected:
     SwapManager();

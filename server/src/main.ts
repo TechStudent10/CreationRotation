@@ -23,6 +23,8 @@ interface Swap {
 
     totalTurns: number
     swapEnded: boolean
+
+    timeout: NodeJS.Timeout
 }
 
 const wss = new WebSocket.Server({ server: httpServer })
@@ -68,12 +70,30 @@ function disconnectFromLobby(data: socketTypes.SocketData) {
         }
     }
     console.log(`disconnecting ${account.name} (${account.userID}) from lobby with code ${data.currentLobbyCode}`)
+    if (isDeletingLobby && Object.keys(swaps).includes(lobbyCode)) {
+        swaps[lobbyCode].unscheduleNextSwap()
+        delete swaps[lobbyCode]
+    }
     if (!isDeletingLobby) {
         broadcastLobbyUpdate(lobbyCode)
     }
 }
 
 const DUMMY_LEVEL_DATA = "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA"
+
+function offsetArray(arr: string[], n: number): string[] {
+    const length = arr.length;
+    const result = new Array(length);
+
+    for (let i = 0; i < length; i++) {
+        // Calculate the new index using modulo to handle overflow
+        const newIndex = (i + n) % length;
+        result[newIndex] = arr[i];
+    }
+
+    return result;
+}
+
 
 class Swap {
     constructor(lobbyCode: string) {
@@ -93,23 +113,61 @@ class Swap {
     }
 
     addLevel(level: string, accIdx: number) {
+        // 3:
+        // 0 - 3 = -3; -(-3) % 2 = 1
+        // 1 - 3 = -2; -(-2) % 2 = 0
+        // 4:
+        // 0 - 4 = -4; -(-4) % 2 = 0
+        // 1 - 4 = -3; -(-3) % 2 = 1
+        // 5:
+        // 0 - 5 = -5; -(-5) % 2 = 1
+        // 1 - 5 = -4; -(-4) % 2 = 0
+
+        // 3:
+        // 0 - 3 = -3; -(-3) % 3 = 0
+        // 1 - 3 = -2; -(-2) % 3 = 1
+        // 2 - 3 = -1; -(-1) % 3 = 2
+        // 4:
+        // 0 - 4 = -4; -(-4) % 3 = 1
+        // 1 - 4 = -3; -(-3) % 3 = 0
+        // 2 - 4 = -2; -(-2) % 3 = 1
+        // 5:
+        // 0 - 5 = -5; -(-5) % 2 = 1
+        // 1 - 5 = -4; -(-4) % 2 = 0
+        // let idx = accIdx - this.currentTurn
+        // if (idx < 0) {
+        //     idx = -(idx) % this.levels.length
+        // }
         this.levels[accIdx] = level
         console.log(this.levels)
         if (this.levels.includes(DUMMY_LEVEL_DATA)) return
-        let levels: string[] = new Array(this.levels.length).fill("")
-        this.levels.forEach((level, index) => {
-            let lvlIdx = index + this.currentTurn
-            if (lvlIdx > this.levels.length - 1) {
-                lvlIdx = lvlIdx % (this.levels.length - 1)
-            }
-            console.log(lvlIdx)
-            levels[lvlIdx] = level
-        })
+        
+        let levels: string[] = []
+        if (this.levels.length == 2) {
+            levels = this.levels.toReversed()
+        } else {
+            levels = offsetArray(this.levels, this.currentTurn)
+        }
+        console.log("a", levels)
+
+        // this.levels.forEach((level, index) => {
+        //     let lvlIdx = index + this.currentTurn
+        //     if (lvlIdx > this.levels.length - 1) {
+        //         lvlIdx = lvlIdx % (this.levels.length - 1)
+        //     }
+        //     console.log(this.lobby.accounts[lvlIdx], lvlIdx)
+        //     levels[lvlIdx] = level
+        // })
         emitToLobby(this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels })
+
+        console.log("current turn:", this.currentTurn)
+        console.log("total turns (accs x settings.turns):", this.totalTurns)
 
         if (this.currentTurn >= this.totalTurns) {
             this.swapEnded = true
-            emitToLobby(this.lobbyCode, Packet.SwapEndedPacket, {})
+            setTimeout(() => emitToLobby(this.lobbyCode, Packet.SwapEndedPacket, {}), 750) // 0.75 seconds
+            console.log("swap ended!")
+            
             return
         }
         this.scheduleNextSwap()
@@ -118,10 +176,14 @@ class Swap {
     scheduleNextSwap() {
         if (this.swapEnded) return
         console.log("scheduling swap for 10 seconds (THIS IS HARDCODED CHANGE THIS BEFORE RELEASE PLEASE I BEG OF YOU)")
-        setTimeout(() => {
+        this.timeout = setTimeout(() => {
             console.log("swap time!")
             this.swap()
-        }, 20_000) // TODO: make this the actual time, this is 20s
+        }, 10_000) // TODO: make this the actual time, this is 20s
+    }
+
+    unscheduleNextSwap() {
+        clearTimeout(this.timeout)
     }
 }
 
@@ -138,6 +200,11 @@ function sendPacket(socket: WebSocket, packetId: Packet, args: socketTypes.Serve
         realArgs = args
     }
     socket.send(`${packetId}|${JSON.stringify({ packet: realArgs })}`)
+    console.log(`[PACKET] sent packet ${packetId}`)
+}
+
+function sendError(socket: WebSocket, error: string) {
+    sendPacket(socket, Packet.ErrorPacket, { error })
 }
 
 const handlers: PacketHandlers = {
@@ -164,8 +231,11 @@ const handlers: PacketHandlers = {
     2002: (socket, args, data) => { // JoinLobbyPacket
         const {code, account} = args
         if (!Object.keys(lobbies).includes(code)) {
-            sendPacket(socket, Packet.ErrorPacket, { error: `lobby with code '${code}' does not exist` })
+            sendError(socket, `lobby with code '${code}' does not exist` )
             return
+        }
+        if (Object.keys(swaps).includes(code)) {
+            sendError(socket, `creation rotation with code '${code}' is already in session` )
         }
         lobbies[code].accounts.push(account)
         sockets[code].push(socket)
@@ -193,9 +263,17 @@ const handlers: PacketHandlers = {
         // this is probably not needed anymore
         // disconnectFromLobby(data)
     },
-    2006: (socket, args) => { // UpdateLobbyPacket
+    2006: (socket, args, data) => { // UpdateLobbyPacket
         const { code } = args
-        if (!Object.keys(lobbies).includes(code)) return
+        if (!Object.keys(lobbies).includes(code)) {
+            sendError(socket, "lobby doesn't exist")
+            return
+        }
+
+        if (lobbies[code].settings.owner.toString() !== data.account?.userID) {
+            sendError(socket, "you are not the owner of this lobby")
+            return
+        }
 
         const { code: _, ...newArgs } = args
 
@@ -222,7 +300,14 @@ const handlers: PacketHandlers = {
         if (!lobbyCode || !account) return
 
         if (!Object.keys(lobbies).includes(lobbyCode)) return
-        if (lobbies[lobbyCode].settings.owner != parseInt(account.userID)) return
+        if (lobbies[lobbyCode].settings.owner != parseInt(account.userID)) {
+            sendError(socket, "you are not the owner of this lobby")
+            return
+        }
+        if (lobbies[lobbyCode].accounts.length <= 1) {
+            sendError(socket, "you are the only person in the lobby, cannot start level swap")
+            return
+        }
 
         let accs: Array<{ index: number, accID: string }> = []
 
@@ -249,7 +334,11 @@ const handlers: PacketHandlers = {
 wss.on("connection", (socket) => {
     let data: socketTypes.SocketData = {}
 
-    console.log("we got ourselves a little GOOBER here\na professional FROLICKER")
+    // i think it's time for more uh...
+    // professional logs
+
+    // console.log("we got ourselves a little GOOBER here\na professional FROLICKER")
+    console.log(`new connection! ${socket.url}`)
 
     socket.on("message", (sdata) => {
         const strData = sdata.toString().split("|", 2)

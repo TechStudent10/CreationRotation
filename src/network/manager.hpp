@@ -25,7 +25,7 @@ public:
 
     template<typename T>
     requires std::is_base_of_v<Packet, T>
-    inline void on(std::function<void(T*)> callback, std::string nspace = "", bool shouldUnbind = false) {
+    inline void on(std::function<void(T*)> callback, bool shouldUnbind = false) {
         if (!this->isConnected) this->connect();
 
         listeners[T::PACKET_ID] = [callback](std::string msg) {
@@ -48,7 +48,7 @@ public:
 
     template<typename T>
     requires std::is_base_of_v<Packet, T>
-    inline void unbind(std::string nspace = "") {
+    inline void unbind() {
         if (!this->isConnected) this->connect();
 
         if (!listeners.contains(T::PACKET_ID)) {
@@ -58,11 +58,11 @@ public:
 
         listeners.erase(T::PACKET_ID);
 
-        log::debug("removed listener for {} ({}) on {}", T::PACKET_NAME, T::PACKET_ID, nspace);
+        log::debug("removed listener for {} ({})", T::PACKET_NAME, T::PACKET_ID);
     }
 
     template<typename _Packet>
-    inline void send(_Packet* packet, std::string nspace = "") {
+    inline void send(_Packet* packet) {
         if (!this->isConnected) this->connect();
 
         log::debug("sending packet {} ({})", packet->getPacketName(), packet->getPacketID());

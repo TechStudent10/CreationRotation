@@ -26,7 +26,7 @@ protected:
         nameLabel->setAnchorPoint({
             0.f, 0.5f
         });
-        nameLabel->limitLabelWidth(35.f, 0.5f, 0.1f);
+        nameLabel->limitLabelWidth(80.f, 0.5f, 0.1f);
         this->addChild(nameLabel);
 
         input = TextInput::create(95.f, name);
@@ -103,7 +103,21 @@ bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
 
     auto settingsList = ListView::create(settingsContents, LobbySettingsCell::CELL_HEIGHT, 220.f, 225.f);
     settingsList->ignoreAnchorPointForPosition(false);
-    m_mainLayer->addChildAtPosition(settingsList, Anchor::Center, ccp(0, -10.f));
+
+    auto border = Border::create(
+        settingsList,
+        {0, 0, 0, 75},
+        {220.f, 225.f}
+    );
+    if(CCScale9Sprite* borderSprite = typeinfo_cast<CCScale9Sprite*>(border->getChildByID("geode.loader/border_sprite"))) {
+        float scaleFactor = 1.7f;
+        borderSprite->setContentSize(CCSize{borderSprite->getContentSize().width, borderSprite->getContentSize().height + 3} / scaleFactor);
+        borderSprite->setScale(scaleFactor);
+        borderSprite->setPositionY(-0.5);
+    }
+    border->ignoreAnchorPointForPosition(false);
+
+    m_mainLayer->addChildAtPosition(border, Anchor::Center, ccp(0, -10.f));
 
     auto submitBtn = CCMenuItemExt::createSpriteExtra(
         ButtonSprite::create("Submit"),

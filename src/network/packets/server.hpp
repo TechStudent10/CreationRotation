@@ -116,7 +116,9 @@ class RecieveSwappedLevelPacket : public Packet {
 class SwapEndedPacket : public Packet {
     CR_PACKET(3003, SwapEndedPacket)
 
-    CR_SERIALIZE()
+    std::string dummy;
+
+    CR_SERIALIZE(dummy)
 };
 
 // OTHER STUFF //

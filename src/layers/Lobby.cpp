@@ -85,7 +85,6 @@ LobbyLayer* LobbyLayer::create(std::string code) {
 
 bool LobbyLayer::init(std::string code) {
     lobbyCode = code;
-    lobbyNspace = fmt::format("/{}", SwapManager::get().currentLobbyCode);
 
     auto director = CCDirector::sharedDirector();
     auto size = director->getWinSize();
@@ -158,6 +157,7 @@ bool LobbyLayer::init(std::string code) {
     );
 
     this->setKeyboardEnabled(true);
+    this->setKeypadEnabled(true);
     this->addChild(mainLayer);
     this->addChild(bottomMenu);
 
@@ -175,36 +175,17 @@ void LobbyLayer::registerListeners() {
     auto& nm = NetworkManager::get();
     nm.on<LobbyUpdatedPacket>([this](LobbyUpdatedPacket* packet) {
         this->refresh(packet->info);
-    }, lobbyNspace);
+    });
     nm.on<SwapStartedPacket>([this](SwapStartedPacket* packet) {
-        // log::info("{}, {}", packet->accID, LobbyManager::createAccountType().userID);
-
-        for (auto acc : packet->accounts) {
-            if (acc.accID != SwapManager::createAccountType().userID) continue;
-
-            auto& sm = SwapManager::get();
-
-            sm.swapIdx = acc.index;
-
-            auto glm = GameLevelManager::sharedState();
-            auto newLvl = glm->createNewLevel();
-
-            sm.levelId = EditorIDs::getID(newLvl);
-
-            sm.registerListeners();
-
-            auto scene = EditLevelLayer::scene(newLvl);
-            cr::utils::replaceScene(scene);
-
-            break;
-        }
-    }, lobbyNspace);
+        auto& sm = SwapManager::get();
+        sm.startSwap(packet);
+    });
 }
 
 void LobbyLayer::unregisterListeners() {
     auto& nm = NetworkManager::get();
-    nm.unbind<LobbyUpdatedPacket>(lobbyNspace);
-    nm.unbind<SwapStartedPacket>(lobbyNspace);
+    nm.unbind<LobbyUpdatedPacket>();
+    nm.unbind<SwapStartedPacket>();
 }
 
 LobbyLayer::~LobbyLayer() {
@@ -227,10 +208,26 @@ void LobbyLayer::refresh(LobbyInfo info) {
             info.settings.name.c_str(),
             "bigFont.fnt"
         );
-        titleLabel->setPosition({
+        titleLabel->limitLabelWidth(300.f, 1.f, 0.1f);
+
+        auto menu = CCMenu::create();
+        menu->setPosition({
             size.width / 2, size.height - 25
         });
-        mainLayer->addChild(titleLabel);
+
+        menu->addChild(
+            CCMenuItemExt::createSpriteExtra(
+                titleLabel,
+                [info](CCObject* sender) {
+                    geode::utils::clipboard::write(
+                        info.code
+                    );
+                    Notification::create("Copied code to clipboard")->show();
+                }
+            )
+        );
+
+        mainLayer->addChild(menu);
     }
 
     titleLabel->setString(fmt::format("{} ({})", info.settings.name, info.code).c_str());
