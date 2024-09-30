@@ -46,8 +46,8 @@ function broadcastLobbyUpdate(lobbyCode: string) {
 
 // https://stackoverflow.com/a/7228322
 function generateCode() {
-    // return Math.floor(Math.random() * (999_999) + 1).toString().padStart(6, "0")
-    return "000001" // this is so that i dont suffer
+    return Math.floor(Math.random() * (999_999) + 1).toString().padStart(6, "0")
+    // return "000001" // this is so that i dont suffer
 }
 
 function getLength(obj: any) {
@@ -341,11 +341,15 @@ wss.on("connection", (socket) => {
     console.log(`new connection! ${socket.url}`)
 
     socket.on("message", (sdata) => {
-        const strData = sdata.toString().split("|", 2)
-        const packetId = strData[0]
-        const args = strData[1]
+        console.log(sdata.toString())
+        const args = JSON.parse(sdata.toString())
+        if (!args && !(typeof args === "object")) {
+            console.error("[PACKET] recieved invalid packet string")
+            return
+        }
+        const packetId = args["packet_id"]
 
-        if (!Object.keys(handlers).includes(packetId)) {
+        if (!Object.keys(handlers).includes(String(packetId))) {
             console.log(`[PACKET] unhandled packet ${packetId}`)
             return
         }
@@ -353,7 +357,7 @@ wss.on("connection", (socket) => {
         console.log(`[PACKET] handling packet ${packetId}`)
 
         // we love committing javascript war crimes
-        handlers[packetId as any](socket, JSON.parse(args).packet, data)
+        handlers[packetId as any](socket, args["packet"], data)
     })
 
     socket.on("close", (code, reason) => {
@@ -361,5 +365,7 @@ wss.on("connection", (socket) => {
     })
 })
 
-console.log("listening on port 3000")
-httpServer.listen(3000)
+const port = process.env.PORT || 3000
+
+console.log(`listening on port ${port}`)
+httpServer.listen(port)

@@ -19,6 +19,7 @@
     "typescript": "^5.5.4"
   },
   "scripts": {
-    "dev": "tsc && node out/main.js"
+    "dev": "tsc && node out/main.js",
+    "build": "tsc"
   }
 }
