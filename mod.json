@@ -8,9 +8,9 @@
 	},
 	"id": "techstudent10.creation_rotation",
 	"name": "Creation Rotation",
-	"version": "v1.0.0",
+	"version": "v1.0.0-alpha.1",
 	"developer": "TechStudent10",
-	"description": "Mod inspired by Wulzy's Level Swap series on YouTube",
+	"description": "Wulzy's Creation Rotation as a mod",
 	"resources": {
 		"sprites": [
 			"resources/*.png"
@@ -32,5 +32,13 @@
             "version": "v1.14.0",
             "importance": "required"
         }
-	]
+	],
+	"settings": {
+		"server-url": {
+			"name": "Server URL",
+			"type": "string",
+			"default": "https://creationrotation.prevter.me",
+			"description": "The Creation Rotation server URL"
+		}
+	}
 }
