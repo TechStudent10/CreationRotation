@@ -8,7 +8,9 @@ void NetworkManager::connect() {
     // client = new sio::client();
     // client->connect("http://127.0.0.1:3000"); // TODO: make this not localhost
 
-    socket.setUrl("http://127.0.0.1:3000");
+    socket.setUrl(
+        Mod::get()->getSettingValue<std::string>("server-url")
+    );
 
     socket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
         log::info("message lol");

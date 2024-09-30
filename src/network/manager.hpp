@@ -9,6 +9,7 @@
 #include <serialization.hpp>
 
 #include <Geode/Geode.hpp>
+#include <matjson.hpp>
 using namespace geode::prelude;
 
 class NetworkManager {
@@ -74,7 +75,9 @@ public:
             cereal::JSONOutputArchive oarchive(ss);
             oarchive(cereal::make_nvp("packet", *packet));
         }
-        socket.send(fmt::format("{}|{}", packet->getPacketID(), ss.str()));
+        auto json = matjson::parse(ss.str());
+        json["packet_id"] = packet->getPacketID();
+        socket.send(json.dump(0));
     }
 protected:
     // sio::client* client;
