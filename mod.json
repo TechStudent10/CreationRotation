@@ -37,7 +37,7 @@
 		"server-url": {
 			"name": "Server URL",
 			"type": "string",
-			"default": "https://creationrotation.prevter.me",
+			"default": "wss://creationrotation.prevter.me",
 			"description": "The Creation Rotation server URL",
 			"filter": "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM.:/"
 		}
