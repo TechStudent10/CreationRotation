@@ -1,6 +1,8 @@
 #include "manager.hpp"
 
-NetworkManager::NetworkManager() {}
+NetworkManager::NetworkManager() {
+    ix::initNetSystem();
+}
 
 void NetworkManager::connect() {
     if (this->isConnected) return; // why are you connecting twice
@@ -14,6 +16,15 @@ void NetworkManager::connect() {
 
     socket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
         log::info("message lol");
+        if (msg->type == ix::WebSocketMessageType::Error) {
+            log::error("ixwebsocket error: {}", msg->errorInfo.reason);
+            return;
+        }
+        if (msg->type == ix::WebSocketMessageType::Open) {
+            log::error("connection success!");
+            return;
+        }
+
         if (msg.get()->str == "") return;
 
         this->onMessage(msg);

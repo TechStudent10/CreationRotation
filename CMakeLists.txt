@@ -24,12 +24,28 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 set(USE_ZLIB OFF)
+set(USE_MBED_TLS ON)
+set(USE_TLS ON)
+SET(CMAKE_C_SIMULATE_ID "Clang")
+set(ENABLE_PROGRAMS OFF)
+set(ENABLE_TESTING OFF)
+set(MBEDTLS_AS_SUBPROJECT OFF)
+set(DISABLE_PACKAGE_CONFIG_AND_INSTALL OFF)
+set(MBEDTLS_FATAL_WARNINGS OFF)
 
-CPMAddPackage("gh:machinezone/IXWebSocket#9884c32")
+CPMAddPackage("gh:TechStudent10/mbedtls#fc79213")
+
+set(MBEDTLS_INCLUDE_DIRS "${mbedtls_SOURCE_DIR}/include")
+set(MBEDTLS_LIBRARY "mbedtls")
+set(MBEDX509_LIBRARY "mbedx509")
+set(MBEDCRYPTO_LIBRARY "mbedcrypto")
+
+CPMAddPackage("gh:machinezone/IXWebSocket#dc8807e")
+install(TARGETS mbedtls mbedx509 mbedcrypto EXPORT mbedtls-targets)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${ixwebsocket_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/cereal/include")
 
-target_link_libraries(${PROJECT_NAME} ixwebsocket)
+target_link_libraries(${PROJECT_NAME} ixwebsocket Crypt32)
 
 setup_geode_mod(${PROJECT_NAME})
