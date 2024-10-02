@@ -21,6 +21,7 @@ add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_compile_definitions(WIN32_LEAN_AND_MEAN=1)
+    target_link_libraries(${PROJECT_NAME} Crypt32)
 endif()
 
 set(USE_ZLIB OFF)
@@ -46,6 +47,6 @@ install(TARGETS mbedtls mbedx509 mbedcrypto EXPORT mbedtls-targets)
 target_include_directories(${PROJECT_NAME} PRIVATE ${ixwebsocket_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/cereal/include")
 
-target_link_libraries(${PROJECT_NAME} ixwebsocket Crypt32)
+target_link_libraries(${PROJECT_NAME} ixwebsocket)
 
 setup_geode_mod(${PROJECT_NAME})
