@@ -7,27 +7,43 @@ NetworkManager::NetworkManager() {
 void NetworkManager::connect() {
     if (this->isConnected) return; // why are you connecting twice
 
-    // client = new sio::client();
-    // client->connect("http://127.0.0.1:3000"); // TODO: make this not localhost
-
     socket.setUrl(
         Mod::get()->getSettingValue<std::string>("server-url")
     );
 
+    socket.disableAutomaticReconnection();
+
+    socket.setPingInterval(15);
+
     socket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
-        log::info("message lol");
         if (msg->type == ix::WebSocketMessageType::Error) {
             log::error("ixwebsocket error: {}", msg->errorInfo.reason);
+            FLAlertLayer::create(
+                "CR Error",
+                fmt::format("There was an error while connecting to the server: {}", msg->errorInfo.reason),
+                "OK"
+            )->show();
             return;
-        }
-        if (msg->type == ix::WebSocketMessageType::Open) {
-            log::error("connection success!");
+        } else if (msg->type == ix::WebSocketMessageType::Open) {
+            log::debug("connection success!");
+            Notification::create(
+                "Connection sucessful!",
+                NotificationIcon::Success,
+                1.5f
+            )->show();
             return;
+        } else if (msg->type == ix::WebSocketMessageType::Close) {
+            log::debug("connection closed");
+            Notification::create(
+                "Disconnected from Creation Rotation",
+                NotificationIcon::Error,
+                1.5f
+            )->show();
+            return;
+        } else if (msg->type == ix::WebSocketMessageType::Message) {
+            if (msg.get()->str == "") return;
+            this->onMessage(msg);
         }
-
-        if (msg.get()->str == "") return;
-
-        this->onMessage(msg);
     });
 
     socket.start();
@@ -65,7 +81,3 @@ void NetworkManager::onMessage(const ix::WebSocketMessagePtr& msg) {
 
     listeners.at(packetId)(packetStr);
 }
-
-// const sio::socket::ptr& NetworkManager::getSocket(std::string nspace) {
-//     return client->socket(nspace);
-// }

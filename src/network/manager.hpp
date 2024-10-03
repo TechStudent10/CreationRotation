@@ -1,6 +1,5 @@
 #pragma once
 #undef _WINSOCKAPI_ 
-// #define WIN32_LEAN_AND_MEAN
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXWebSocket.h>
 #include <ixwebsocket/IXUserAgent.h>
@@ -80,14 +79,9 @@ public:
         socket.send(json.dump(0));
     }
 protected:
-    // sio::client* client;
-    ix::WebSocket socket;
-
     NetworkManager();
-
-    // const sio::socket::ptr& getSocket(std::string nspace = "");
+    ix::WebSocket socket;
     void onMessage(const ix::WebSocketMessagePtr& msg);
-
     std::unordered_map<
         int,
         std::function<void(std::string)>

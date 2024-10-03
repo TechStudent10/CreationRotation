@@ -56,14 +56,12 @@ function getLength(obj: any) {
 
 function disconnectFromLobby(data: socketTypes.SocketData) {
     const { currentLobbyCode: lobbyCode, account } = data;
-    // const account = data.account
     if (!lobbyCode) { console.log("could not find lobby"); return}
     if (!account) { console.log("could not find account"); return }
     let isDeletingLobby = false
     if (Object.keys(lobbies).includes(lobbyCode)) {
         const index = lobbies[lobbyCode].accounts.map(e => e.userID).indexOf(account.userID)
         lobbies[lobbyCode].accounts.splice(index, 1)
-        // delete lobbies[lobbyCode].accounts[account.userID]
         if (getLength(lobbies[lobbyCode].accounts) == 0) {
             delete lobbies[lobbyCode]
             isDeletingLobby = true
@@ -113,31 +111,6 @@ class Swap {
     }
 
     addLevel(level: string, accIdx: number) {
-        // 3:
-        // 0 - 3 = -3; -(-3) % 2 = 1
-        // 1 - 3 = -2; -(-2) % 2 = 0
-        // 4:
-        // 0 - 4 = -4; -(-4) % 2 = 0
-        // 1 - 4 = -3; -(-3) % 2 = 1
-        // 5:
-        // 0 - 5 = -5; -(-5) % 2 = 1
-        // 1 - 5 = -4; -(-4) % 2 = 0
-
-        // 3:
-        // 0 - 3 = -3; -(-3) % 3 = 0
-        // 1 - 3 = -2; -(-2) % 3 = 1
-        // 2 - 3 = -1; -(-1) % 3 = 2
-        // 4:
-        // 0 - 4 = -4; -(-4) % 3 = 1
-        // 1 - 4 = -3; -(-3) % 3 = 0
-        // 2 - 4 = -2; -(-2) % 3 = 1
-        // 5:
-        // 0 - 5 = -5; -(-5) % 2 = 1
-        // 1 - 5 = -4; -(-4) % 2 = 0
-        // let idx = accIdx - this.currentTurn
-        // if (idx < 0) {
-        //     idx = -(idx) % this.levels.length
-        // }
         this.levels[accIdx] = level
         console.log(this.levels)
         if (this.levels.includes(DUMMY_LEVEL_DATA)) return
@@ -150,14 +123,6 @@ class Swap {
         }
         console.log("a", levels)
 
-        // this.levels.forEach((level, index) => {
-        //     let lvlIdx = index + this.currentTurn
-        //     if (lvlIdx > this.levels.length - 1) {
-        //         lvlIdx = lvlIdx % (this.levels.length - 1)
-        //     }
-        //     console.log(this.lobby.accounts[lvlIdx], lvlIdx)
-        //     levels[lvlIdx] = level
-        // })
         emitToLobby(this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels })
 
         console.log("current turn:", this.currentTurn)
@@ -260,6 +225,7 @@ const handlers: PacketHandlers = {
         sendPacket(socket, Packet.RecieveLobbyInfoPacket, { info: lobbies[code] })
     },
     2005: (socket, _, data) => { // DisconnectFromLobbyPacket
+        socket.close()
         // this is probably not needed anymore
         // disconnectFromLobby(data)
     },
