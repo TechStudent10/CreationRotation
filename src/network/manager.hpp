@@ -11,11 +11,17 @@
 #include <matjson.hpp>
 using namespace geode::prelude;
 
+using DisconnectCallback = std::function<void(std::string)>;
+
 class NetworkManager {
 public:
     static NetworkManager& get() {
         static NetworkManager instance;
         return instance;
+    }
+
+    void setDisconnectCallback(DisconnectCallback callback) {
+        disconnectCallback = callback;
     }
 
     bool isConnected = false;
@@ -81,7 +87,11 @@ public:
 protected:
     NetworkManager();
     ix::WebSocket socket;
+
     void onMessage(const ix::WebSocketMessagePtr& msg);
+
+    DisconnectCallback disconnectCallback;
+
     std::unordered_map<
         int,
         std::function<void(std::string)>

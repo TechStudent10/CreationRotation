@@ -86,6 +86,19 @@ class UpdateLobbyPacket : public Packet {
     )
 };
 
+class KickUserPacket : public Packet {
+    CR_PACKET(2008, KickUserPacket)
+
+    KickUserPacket(int userID) :
+        userID(userID) {}
+
+    int userID;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(userID)
+    )
+};
+
 // SWAPPING
 
 class StartSwapPacket : public Packet {

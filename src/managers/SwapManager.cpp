@@ -31,7 +31,7 @@ LobbySettings SwapManager::createDefaultSettings() {
     return {
         .name = fmt::format("{}'s Lobby", acc.name),
         .turns = 4,
-        .owner = geode::utils::numFromString<int>(acc.userID).unwrapOr(0),
+        .owner = acc.userID,
         .minutesPerTurn = 5
     };
 }
@@ -66,13 +66,13 @@ Account SwapManager::createAccountType() {
 
     return {
         .name = gm->m_playerName,
-        .userID = std::to_string(gm->m_playerUserID.value()),
-        .iconID = std::to_string(gm->getPlayerFrame()),
-        .color1 = std::to_string(gm->m_playerColor.value()),
-        .color2 = std::to_string(gm->m_playerColor2.value()),
+        .userID = gm->m_playerUserID.value(),
+        .iconID = gm->getPlayerFrame(),
+        .color1 = gm->m_playerColor.value(),
+        .color2 = gm->m_playerColor2.value(),
         .color3 = gm->m_playerGlow ?
-            std::to_string(gm->m_playerGlowColor.value()) :
-            "-1"
+            gm->m_playerGlowColor.value() :
+            -1
     };
 }
 
@@ -146,6 +146,8 @@ void SwapManager::registerListeners() {
     CR_REQUIRE_CONNECTION()
 
     auto& nm = NetworkManager::get();
+
+    nm.setDisconnectCallback([](std::string reason) {});
 
     nm.on<TimeToSwapPacket>([this](TimeToSwapPacket* p) {
         auto& nm = NetworkManager::get();

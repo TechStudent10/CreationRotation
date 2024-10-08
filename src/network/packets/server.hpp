@@ -69,7 +69,7 @@ class JoinedLobbyPacket : public Packet {
 
 struct AccWithIndex {
     int index;
-    std::string accID;
+    int accID;
 
     CR_SERIALIZE(
         CEREAL_NVP(index),

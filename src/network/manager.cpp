@@ -5,7 +5,12 @@ NetworkManager::NetworkManager() {
 }
 
 void NetworkManager::connect() {
-    if (this->isConnected) return; // why are you connecting twice
+    log::debug("connecting");
+    if (this->isConnected) {
+        // disconnect then reconnect
+        log::debug("already connected; disconnecting then reconnecting...");
+        this->disconnect();
+    }
 
     socket.setUrl(
         Mod::get()->getSettingValue<std::string>("server-url")
@@ -17,28 +22,38 @@ void NetworkManager::connect() {
 
     socket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
         if (msg->type == ix::WebSocketMessageType::Error) {
-            log::error("ixwebsocket error: {}", msg->errorInfo.reason);
-            FLAlertLayer::create(
-                "CR Error",
-                fmt::format("There was an error while connecting to the server: {}", msg->errorInfo.reason),
-                "OK"
-            )->show();
+            const auto errReason = msg->errorInfo.reason;
+            log::error("ixwebsocket error: {}", errReason);
+            Loader::get()->queueInMainThread([this, errReason]() {
+                FLAlertLayer::create(
+                    "CR Error",
+                    fmt::format("There was an error while connecting to the server: {}", errReason),
+                    "OK"
+                )->show();
+            });
             return;
         } else if (msg->type == ix::WebSocketMessageType::Open) {
             log::debug("connection success!");
-            Notification::create(
-                "Connection sucessful!",
-                NotificationIcon::Success,
-                1.5f
-            )->show();
+            Loader::get()->queueInMainThread([]() {
+                Notification::create(
+                    "Connection sucessful!",
+                    NotificationIcon::Success,
+                    1.5f
+                )->show();
+            });
             return;
         } else if (msg->type == ix::WebSocketMessageType::Close) {
             log::debug("connection closed");
-            Notification::create(
-                "Disconnected from Creation Rotation",
-                NotificationIcon::Error,
-                1.5f
-            )->show();
+            this->isConnected = false;
+            const auto reason = msg->closeInfo.reason;
+            Loader::get()->queueInMainThread([this, reason]() {
+                Notification::create(
+                    "Disconnected from Creation Rotation",
+                    NotificationIcon::Error,
+                    1.5f
+                )->show();
+                if (this->disconnectCallback) this->disconnectCallback(reason);
+            });
             return;
         } else if (msg->type == ix::WebSocketMessageType::Message) {
             if (msg.get()->str == "") return;
@@ -47,7 +62,6 @@ void NetworkManager::connect() {
     });
 
     socket.start();
-
     this->isConnected = true;
 }
 

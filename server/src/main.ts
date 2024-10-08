@@ -31,10 +31,11 @@ const wss = new WebSocket.Server({ server: httpServer })
 
 let lobbies: { [code: string]: Lobby } = {}
 let swaps : { [code: string]: Swap } = {}
-let sockets : { [code: string]: WebSocket[] } = {}
+let kickedUsers : { [code: string]: number[] } = {}
+let sockets : { [code: string]: { [userID: number]: WebSocket } } = {}
 
 function emitToLobby(lobbyCode: string, packetId: Packet, args: object) {
-    sockets[lobbyCode]?.forEach((socket) => {
+    Object.values(sockets[lobbyCode])?.forEach((socket) => {
         sendPacket(socket, packetId, args)
     })
 }
@@ -64,14 +65,17 @@ function disconnectFromLobby(data: socketTypes.SocketData) {
         lobbies[lobbyCode].accounts.splice(index, 1)
         if (getLength(lobbies[lobbyCode].accounts) == 0) {
             delete lobbies[lobbyCode]
+            delete kickedUsers[lobbyCode]
+            delete sockets[lobbyCode]
+
+            if (Object.keys(swaps).includes(lobbyCode)) {
+                swaps[lobbyCode].unscheduleNextSwap()
+                delete swaps[lobbyCode]
+            }
             isDeletingLobby = true
         }
     }
-    console.log(`disconnecting ${account.name} (${account.userID}) from lobby with code ${data.currentLobbyCode}`)
-    if (isDeletingLobby && Object.keys(swaps).includes(lobbyCode)) {
-        swaps[lobbyCode].unscheduleNextSwap()
-        delete swaps[lobbyCode]
-    }
+    console.log(`disconnected ${account.name} (${account.userID}) from lobby with code ${data.currentLobbyCode}`)
     if (!isDeletingLobby) {
         broadcastLobbyUpdate(lobbyCode)
     }
@@ -180,7 +184,8 @@ const handlers: PacketHandlers = {
             accounts: [],
             settings: args.settings
         }
-        sockets[newLobby.code] = []
+        sockets[newLobby.code] = {}
+        kickedUsers[newLobby.code] = []
         lobbies[newLobby.code] = newLobby
         console.log(newLobby.code)
         console.log(lobbies)
@@ -201,9 +206,14 @@ const handlers: PacketHandlers = {
         }
         if (Object.keys(swaps).includes(code)) {
             sendError(socket, `creation rotation with code '${code}' is already in session` )
+            return
+        }
+        if (kickedUsers[code].includes(account.userID)) {
+            sendError(socket, `you have been kicked from lobby <cy>"${lobbies[code].settings.name}"</c>. you cannot rejoin`)
+            return
         }
         lobbies[code].accounts.push(account)
-        sockets[code].push(socket)
+        sockets[code][account.userID] = socket
         console.log(`user ${account.name} has joined lobby ${lobbies[code].settings.name}`)
         data.currentLobbyCode = code
         data.account = args.account
@@ -214,17 +224,25 @@ const handlers: PacketHandlers = {
 
         broadcastLobbyUpdate(code)
     },
-    2003: (socket, args) => { // GetAccountsPacket (response: RecieveAccountsPacket)
-        const { code } = args
+    2003: (socket, _, data) => { // GetAccountsPacket (response: RecieveAccountsPacket)
+        const { currentLobbyCode: code } = data
+        if (!code) {
+            sendError(socket, "you are not in a lobby")
+            return
+        }
         if (!Object.keys(lobbies).includes(code)) return
         sendPacket(socket, Packet.RecieveAccountsPacket, { accounts: lobbies[code].accounts })
     },
-    2004: (socket, args) => { // GetLobbyInfoPacket (response: RecieveLobbyInfoPacket)
-        const { code } = args
+    2004: (socket, _, data) => { // GetLobbyInfoPacket (response: RecieveLobbyInfoPacket)
+        const { currentLobbyCode: code } = data
+        if (!code) {
+            sendError(socket, "you are not in a lobby")
+            return
+        }
         if (!Object.keys(lobbies).includes(code)) return
         sendPacket(socket, Packet.RecieveLobbyInfoPacket, { info: lobbies[code] })
     },
-    2005: (socket, _, data) => { // DisconnectFromLobbyPacket
+    2005: (socket) => { // DisconnectFromLobbyPacket
         socket.close()
         // this is probably not needed anymore
         // disconnectFromLobby(data)
@@ -236,7 +254,7 @@ const handlers: PacketHandlers = {
             return
         }
 
-        if (lobbies[code].settings.owner.toString() !== data.account?.userID) {
+        if (lobbies[code].settings.owner !== data.account?.userID) {
             sendError(socket, "you are not the owner of this lobby")
             return
         }
@@ -261,12 +279,11 @@ const handlers: PacketHandlers = {
     },
     2007: (socket, _, data) => { // StartSwapPacket
         const { currentLobbyCode: lobbyCode, account } = data
-        // socket.
 
         if (!lobbyCode || !account) return
 
         if (!Object.keys(lobbies).includes(lobbyCode)) return
-        if (lobbies[lobbyCode].settings.owner != parseInt(account.userID)) {
+        if (lobbies[lobbyCode].settings.owner != account.userID) {
             sendError(socket, "you are not the owner of this lobby")
             return
         }
@@ -275,10 +292,9 @@ const handlers: PacketHandlers = {
             return
         }
 
-        let accs: Array<{ index: number, accID: string }> = []
+        let accs: Array<{ index: number, accID: number }> = []
 
         lobbies[lobbyCode].accounts.forEach((account, index) => {
-            // const account = lobbies[lobbyCode].accounts[index]
             console.log({ index, accID: account.userID })
             accs.push({
                 index: index,
@@ -290,9 +306,34 @@ const handlers: PacketHandlers = {
         swaps[lobbyCode] = new Swap(lobbyCode)
         swaps[lobbyCode].scheduleNextSwap()
     },
-    3001: (socket, args) => { // SendLevelPacket
-        const { code } = args
-        console.log("hello?????")
+    2008: (socket, args, data) => { // KickUserPacket
+        const { currentLobbyCode: lobbyCode, account } = data
+        const { userID } = args
+
+        if (!lobbyCode || !account) return
+        
+        if (!Object.keys(lobbies).includes(lobbyCode)) {
+            sendError(socket, "invalid lobby code recieved")
+            return
+        }
+        if (lobbies[lobbyCode].settings.owner != account.userID) {
+            sendError(socket, "you are not the owner of this lobby")
+            return
+        }
+        if (account.userID == userID) {
+            sendError(socket, "you cannot kick yourself")
+            return
+        }
+
+        sockets[lobbyCode][userID].close(1000, "kicked from lobby")
+        kickedUsers[lobbyCode].push(userID)
+    },
+    3001: (socket, args, data) => { // SendLevelPacket
+        const { currentLobbyCode: code } = data
+        if (!code) {
+            sendError(socket, "you are not in a lobby")
+            return
+        }
         swaps[code].addLevel(args.lvlStr, args.accIdx)
     }
 }
@@ -307,9 +348,8 @@ wss.on("connection", (socket) => {
     console.log(`new connection! ${socket.url}`)
 
     socket.on("message", (sdata) => {
-        console.log(sdata.toString())
         const args = JSON.parse(sdata.toString())
-        if (!args && !(typeof args === "object")) {
+        if (!args || typeof args !== "object") {
             console.error("[PACKET] recieved invalid packet string")
             return
         }
@@ -331,7 +371,27 @@ wss.on("connection", (socket) => {
     })
 })
 
+app.get("/", (req, res) => {
+    res.send("the server is up and running!")
+})
+
+app.get("/stats", (req, res) => {
+    res.send(`
+        <h1>Creation Rotation server statistics</h1>
+        <p>
+            Number of lobbies: <b>${getLength(lobbies)}</b>
+            <br>
+            Number of active swaps: <b>${getLength(swaps)}</b>
+            <br>
+            Lobbies subtract swaps (inactive swaps): <b>${getLength(lobbies) - getLength(swaps)}</b>
+            <br>
+            Number of connected clients: <b>${getLength(sockets)}</b>
+        </p>
+    `)
+})
+
 const port = process.env.PORT || 3000
+// const host = process.env.HOST || "127.0.0.1"
 
 console.log(`listening on port ${port}`)
 httpServer.listen(port)

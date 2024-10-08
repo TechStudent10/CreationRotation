@@ -1,17 +1,13 @@
 // import { Socket } from "socket.io"
 import WebSocket from "ws"
 
-// iconID, color1-3 should be integers but for
-// the sake of maintaining sanity while working
-// with C++ std::maps, im just gonna make them
-// the same type.
 export type Account = {
     name: string
-    userID: string
-    iconID: string
-    color1: string
-    color2: string
-    color3: string
+    userID: number
+    iconID: number
+    color1: number
+    color2: number
+    color3: number
 }
 
 
@@ -34,10 +30,6 @@ export type CreationSwap = {
 }
 
 export interface ServerToClientEvents {
-    // packet: (args: {
-    //     packet_id: number
-    //     [key: string]: any
-    // }) => {}
     "1001": {info: Lobby}
     "1002": {accounts: Account[]}
     "1003": {info: Lobby}
@@ -63,12 +55,6 @@ export interface SocketData {
     account?: Account
 }
 
-// export type SocketConnection = Socket<
-//     ClientToServerEvents,
-//     ServerToClientEvents,
-//     InterServerEvents,
-//     SocketData
-// >
 
 export interface PacketHandlers {
     // CreateLobbyPacket (response: LobbyCreatedPacket)
@@ -92,6 +78,8 @@ export interface PacketHandlers {
     2006: (socket: WebSocket, args: { code: string, settings: LobbySettings}, data: SocketData) => void
     // StartSwapPacket
     2007: (socket: WebSocket, args: {}, data: SocketData) => void
+    // KickUserPacket
+    2008: (socket: WebSocket, args: { userID: number }, data: SocketData) => void
     // SendLevelPacket
     3001: (socket: WebSocket, args: {
         code: string

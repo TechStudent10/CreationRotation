@@ -19,7 +19,7 @@ protected:
             name.c_str(),
             "bigFont.fnt"
         );
-        // nameLabel->setScale(0.5f);
+        
         nameLabel->setPosition({
             5.f, CELL_HEIGHT / 2.f
         });

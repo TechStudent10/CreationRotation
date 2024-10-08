@@ -5,11 +5,13 @@ using namespace geode::prelude;
 
 class PlayerCell : public CCLayer {
 protected:
-    bool init(std::string playerName, int mainColor, int secondColor, int glowColor, int iconID, float width);
-    void onOpenProfile(CCObject*);
+    Account m_account;
+
+    bool init(Account account, float width, bool canKick);
+    void onKickUser(CCObject*);
 public:
     static constexpr int CELL_HEIGHT = 75.f;
-    static PlayerCell* create(std::string playerName, int mainColor, int secondColor, int glowColor, int iconID, float width);
+    static PlayerCell* create(Account account, float width, bool canKick);
 };
 
 class LobbyLayer : public CCLayer {

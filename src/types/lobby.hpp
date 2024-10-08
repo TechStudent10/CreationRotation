@@ -20,11 +20,11 @@ struct LobbySettings {
 
 struct Account {
     std::string name;
-    std::string userID;
-    std::string iconID;
-    std::string color1;
-    std::string color2;
-    std::string color3;
+    int userID;
+    int iconID;
+    int color1;
+    int color2;
+    int color3;
 
     CR_SERIALIZE(
         CEREAL_NVP(name),

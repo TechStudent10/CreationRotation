@@ -9,15 +9,12 @@
 
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 
-PlayerCell* PlayerCell::create(std::string playerName, int mainColor, int secondColor, int glowColor, int iconID, float width) {
+PlayerCell* PlayerCell::create(Account account, float width, bool canKick) {
     auto ret = new PlayerCell;
     if (ret->init(
-        playerName,
-        mainColor,
-        secondColor,
-        glowColor,
-        iconID,
-        width
+        account,
+        width,
+        canKick
     )) {
         ret->autorelease();
         return ret;
@@ -26,7 +23,9 @@ PlayerCell* PlayerCell::create(std::string playerName, int mainColor, int second
     return nullptr;
 }
 
-bool PlayerCell::init(std::string playerName, int mainColor, int secondColor, int glowColor, int iconID, float width) {
+bool PlayerCell::init(Account account, float width, bool canKick) {
+    m_account = account;
+
     this->setContentSize({
         width,
         CELL_HEIGHT
@@ -35,14 +34,14 @@ bool PlayerCell::init(std::string playerName, int mainColor, int secondColor, in
     auto player = SimplePlayer::create(0);
     auto gm = GameManager::get();
 
-    player->updatePlayerFrame(iconID, IconType::Cube);
-    player->setColor(gm->colorForIdx(mainColor));
-    player->setSecondColor(gm->colorForIdx(secondColor));
+    player->updatePlayerFrame(account.iconID, IconType::Cube);
+    player->setColor(gm->colorForIdx(account.color1));
+    player->setSecondColor(gm->colorForIdx(account.color2));
 
-    if (glowColor == -1) {
+    if (account.color3 == -1) {
         player->disableGlowOutline();
     } else {
-        player->setGlowOutline(gm->colorForIdx(glowColor));
+        player->setGlowOutline(gm->colorForIdx(account.color3));
     }
 
     player->setPosition({ 25.f, CELL_HEIGHT / 2.f});
@@ -50,28 +49,45 @@ bool PlayerCell::init(std::string playerName, int mainColor, int secondColor, in
 
     this->addChild(player);
 
-    auto menu = CCMenu::create();
-    auto nameBtn = CCMenuItemSpriteExtra::create(
-        CCLabelBMFont::create(playerName.c_str(), "bigFont.fnt"), this, menu_selector(PlayerCell::onOpenProfile)
-    );
-    nameBtn->setPosition({ 0.f, 0.f });
-    nameBtn->ignoreAnchorPointForPosition(true);
-    menu->addChild(nameBtn);
-    menu->setContentSize(
-        nameBtn->getContentSize()
-    );
-    menu->setPosition({
+    auto nameLabel = CCLabelBMFont::create(account.name.c_str(), "bigFont.fnt");
+    nameLabel->limitLabelWidth(225.f, 1.f, 0.1f);
+    nameLabel->setPosition({
         55.f, CELL_HEIGHT / 2.f
     });
-    menu->setAnchorPoint({ 0.f, 0.5f });
-    menu->ignoreAnchorPointForPosition(false);
+    nameLabel->setAnchorPoint({ 0.f, 0.5f });
+    nameLabel->ignoreAnchorPointForPosition(false);
 
-    this->addChild(menu);
+    this->addChild(nameLabel);
+
+    if (canKick && account.userID != GameManager::get()->m_playerUserID.value()) {
+        auto kickBtn = CCMenuItemSpriteExtra::create(
+            CCSprite::createWithSpriteFrameName("accountBtn_removeFriend_001.png"), this, menu_selector(PlayerCell::onKickUser)
+        );
+        auto kickMenu = CCMenu::create();
+        kickMenu->addChild(kickBtn);
+        kickMenu->setPosition(
+            width - 55.f, CELL_HEIGHT / 2.f
+        );
+        kickMenu->setAnchorPoint({ 0.5f, 0.5f });
+        this->addChild(kickMenu);
+    }
 
     return true;
 }
 
-void PlayerCell::onOpenProfile(CCObject* sender) {}
+void PlayerCell::onKickUser(CCObject* sender) {
+    geode::createQuickPopup(
+        "Kick User",
+        fmt::format("Would you like to kick user <cy>\"{}\"</c>? Doing so will <cr>not allow them</c> to join back.", m_account.name),
+        "Close", "Kick",
+        [this](auto, bool btn2) {
+            if (!btn2) return;
+            
+            auto& nm = NetworkManager::get();
+            nm.send(KickUserPacket::create(m_account.userID));
+        }
+    );
+}
 
 LobbyLayer* LobbyLayer::create(std::string code) {
     auto ret = new LobbyLayer();
@@ -180,6 +196,21 @@ void LobbyLayer::registerListeners() {
         auto& sm = SwapManager::get();
         sm.startSwap(packet);
     });
+    nm.setDisconnectCallback([this](std::string reason) {
+        unregisterListeners();
+
+        geode::createQuickPopup(
+            "Disconnected",
+            fmt::format("You have been disconnected from the Creation Rotation servers. Reason:\n\n{}", reason),
+            "OK", "Close",
+            [this](auto, bool) {
+                auto& nm = NetworkManager::get();
+                nm.isConnected = false;
+                nm.setDisconnectCallback([](std::string) {});
+                cr::utils::popScene();
+            }
+        );
+    });
 }
 
 void LobbyLayer::unregisterListeners() {
@@ -239,12 +270,9 @@ void LobbyLayer::refresh(LobbyInfo info) {
     for (auto acc : info.accounts) {
         playerListItems->addObject(
             PlayerCell::create(
-                acc.name,
-                numFromString<int>(acc.color1).unwrapOr(1),
-                numFromString<int>(acc.color2).unwrapOr(3),
-                numFromString<int>(acc.color3).unwrapOr(-1),
-                numFromString<int>(acc.iconID).unwrapOr(1),
-                listWidth
+                acc,
+                listWidth,
+                isOwner
             )
         );
     }
