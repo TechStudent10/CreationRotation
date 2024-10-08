@@ -66,7 +66,7 @@ bool PlayerCell::init(Account account, float width, bool canKick) {
         auto kickMenu = CCMenu::create();
         kickMenu->addChild(kickBtn);
         kickMenu->setPosition(
-            width - 55.f, CELL_HEIGHT / 2.f
+            width - 30.f, CELL_HEIGHT / 2.f
         );
         kickMenu->setAnchorPoint({ 0.5f, 0.5f });
         this->addChild(kickMenu);
