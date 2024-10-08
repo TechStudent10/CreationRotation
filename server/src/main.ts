@@ -63,6 +63,13 @@ function disconnectFromLobby(data: socketTypes.SocketData) {
     if (Object.keys(lobbies).includes(lobbyCode)) {
         const index = lobbies[lobbyCode].accounts.map(e => e.userID).indexOf(account.userID)
         lobbies[lobbyCode].accounts.splice(index, 1)
+
+        if (data.account?.userID === lobbies[lobbyCode].settings.owner) {
+            Object.values(sockets[lobbyCode]).forEach((socket) => {
+                socket.close(1000, "owner left, lobby closed")
+            })
+        }
+
         if (getLength(lobbies[lobbyCode].accounts) == 0) {
             delete lobbies[lobbyCode]
             delete kickedUsers[lobbyCode]

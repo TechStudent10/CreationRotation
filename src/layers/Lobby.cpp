@@ -447,6 +447,9 @@ void LobbyLayer::keyBackClicked() {
         [this](auto, bool btn2) {
             if (!btn2) return;
 
+            auto& nm = NetworkManager::get();
+            nm.setDisconnectCallback([](std::string) {});
+
             auto& lm = SwapManager::get();
             lm.disconnectLobby();
 
