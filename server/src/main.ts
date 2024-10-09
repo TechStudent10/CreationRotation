@@ -333,7 +333,7 @@ const handlers: PacketHandlers = {
             return
         }
 
-        sockets[lobbyCode][userID].close(1000, "kicked from lobby")
+        sockets[lobbyCode][userID].close(1000, "kicked from lobby by owner; you can no longer rejoin")
         kickedUsers[lobbyCode].push(userID)
     },
     3001: (socket, args, data) => { // SendLevelPacket
