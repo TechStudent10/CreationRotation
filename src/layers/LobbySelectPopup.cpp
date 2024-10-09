@@ -1,6 +1,7 @@
 #include "LobbySelectPopup.hpp"
 
 #include <managers/SwapManager.hpp>
+#include <network/manager.hpp>
 
 #include <layers/Lobby.hpp>
 #include <layers/LobbySettings.hpp>
@@ -67,6 +68,10 @@ bool LobbySelectPopup::setup() {
     );
 
     m_mainLayer->addChildAtPosition(mainMenu, Anchor::Center);
+
+    NetworkManager::get().setDisconnectCallback([this](std::string reason) {
+        this->m_closeBtn->activate();
+    });
 
     return true;
 }

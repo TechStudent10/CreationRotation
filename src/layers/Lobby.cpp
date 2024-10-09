@@ -196,20 +196,14 @@ void LobbyLayer::registerListeners() {
         auto& sm = SwapManager::get();
         sm.startSwap(packet);
     });
+    nm.showDisconnectPopup = true;
     nm.setDisconnectCallback([this](std::string reason) {
         unregisterListeners();
 
-        geode::createQuickPopup(
-            "Disconnected",
-            fmt::format("You have been disconnected from the Creation Rotation servers. Reason:\n\n{}", reason),
-            "OK", "Close",
-            [this](auto, bool) {
-                auto& nm = NetworkManager::get();
-                nm.isConnected = false;
-                nm.setDisconnectCallback([](std::string) {});
-                cr::utils::popScene();
-            }
-        );
+        auto& nm = NetworkManager::get();
+        nm.isConnected = false;
+        nm.showDisconnectPopup = false;
+        cr::utils::popScene();
     });
 }
 
@@ -448,7 +442,7 @@ void LobbyLayer::keyBackClicked() {
             if (!btn2) return;
 
             auto& nm = NetworkManager::get();
-            nm.setDisconnectCallback([](std::string) {});
+            nm.showDisconnectPopup = false;
 
             auto& lm = SwapManager::get();
             lm.disconnectLobby();

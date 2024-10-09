@@ -23,6 +23,7 @@ public:
     void setDisconnectCallback(DisconnectCallback callback) {
         disconnectCallback = callback;
     }
+    bool showDisconnectPopup = true;
 
     bool isConnected = false;
 

@@ -34,6 +34,11 @@ void NetworkManager::connect() {
             return;
         } else if (msg->type == ix::WebSocketMessageType::Open) {
             log::debug("connection success!");
+            // send login data
+            auto loginInfo = matjson::Object({
+                {"version", Mod::get()->getVersion().toVString()}
+            });
+            socket.send(fmt::format("login|{}", matjson::Value(loginInfo).dump(0)));
             Loader::get()->queueInMainThread([]() {
                 Notification::create(
                     "Connection sucessful!",
@@ -52,7 +57,16 @@ void NetworkManager::connect() {
                     NotificationIcon::Error,
                     1.5f
                 )->show();
-                if (this->disconnectCallback) this->disconnectCallback(reason);
+                if (this->showDisconnectPopup) {
+                    geode::createQuickPopup(
+                        "Disconnected",
+                        fmt::format("You have been disconnected from the Creation Rotation servers. Reason:\n\n{}", reason),
+                        "OK", "Close",
+                        [this, reason](auto, bool) {
+                            if (disconnectCallback) disconnectCallback(reason);
+                        }
+                    );
+                }
             });
             return;
         } else if (msg->type == ix::WebSocketMessageType::Message) {

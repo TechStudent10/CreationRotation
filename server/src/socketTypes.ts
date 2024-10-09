@@ -10,6 +10,9 @@ export type Account = {
     color3: number
 }
 
+export type LoginInfo = {
+    version: string
+}
 
 export type Lobby = {
     settings: LobbySettings

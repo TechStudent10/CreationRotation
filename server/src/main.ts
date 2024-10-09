@@ -1,6 +1,7 @@
 import WebSocket from "ws"
 import { createServer } from "http"
 import { default as express } from "express"
+import { version } from "../package.json"
 
 import * as socketTypes from "./socketTypes"
 
@@ -355,6 +356,40 @@ wss.on("connection", (socket) => {
     console.log(`new connection! ${socket.url}`)
 
     socket.on("message", (sdata) => {
+        if (sdata.toString().startsWith("login")) {
+            const loginJson = JSON.parse(sdata.toString().split("|", 2)[1]) as socketTypes.LoginInfo
+            if (!loginJson || typeof loginJson !== "object") {
+                console.error("[LOGIN] recieved invalid login information")
+                return
+            }
+            // // remove the V prefix if it's there
+            // let versionStr: string = loginJson.version.replace("v", "")
+            // let version: string = ""
+
+            // // check if alpha/beta, extract identifier and number
+            // let versionIdentifier: string = ""
+            // let versionIdentifierNum: number = 0
+            // if (versionStr.includes("-")) {
+            //     versionIdentifier = versionStr.split("-", 2)[1].split(".", 2)[0]
+            //     versionIdentifierNum = parseInt(versionStr.split("-", 2)[1].split(".", 2)[1])
+            //     version = versionStr.split("-", 2)[0]
+            // } else {
+            //     version = versionStr
+            // }
+
+            // console.log(`version: ${version}, identifier: ${versionIdentifier}, iden. num: ${versionIdentifierNum}`)
+
+            // if (versionIdentifier == "") {
+            //     // check major (1.x.x) then minor (x.1.x) then patch (x.x.1)
+            // }
+            // this is not needed LOL
+            let modVersion = loginJson.version.replace("v", "")
+            if (modVersion !== version) {
+                socket.close(1000, `version mismatch: mod version <cy>${modVersion}</c> does not equal server version <cy>${version}</c>`)
+            }
+            return
+        }
+
         const args = JSON.parse(sdata.toString())
         if (!args || typeof args !== "object") {
             console.error("[PACKET] recieved invalid packet string")
