@@ -13,10 +13,11 @@
     "@types/express": "^4.17.21",
     "@types/ws": "^8.5.12",
     "tsc": "^2.0.4",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.5.4"
   },
   "scripts": {
-    "dev": "tsc && node out/main.js",
+    "dev": "tsc && tsc-alias && node out/main.js",
     "build": "tsc"
   }
 }
