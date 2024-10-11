@@ -3,16 +3,13 @@ import { SocketData, ServerState } from "@/types/state"
 import WebSocket from "ws"
 
 export function offsetArray(arr: string[], n: number): string[] {
-    const length = arr.length;
-    const result = new Array(length);
+    let result: string[] = Array(arr.length).fill("")
 
-    for (let i = 0; i < length; i++) {
-        // Calculate the new index using modulo to handle overflow
-        const newIndex = (i + n) % length;
-        result[newIndex] = arr[i];
-    }
+    arr.forEach((v, i) => {
+        result[(i + n) % arr.length] = v
+    })
 
-    return result;
+    return result
 }
 
 export function sendPacket(socket: WebSocket, packetId: Packet, args: ServerToClientEvents[typeof packetId]) {

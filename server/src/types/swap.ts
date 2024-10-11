@@ -48,6 +48,12 @@ export class Swap {
         if (this.levels.includes(DUMMY_LEVEL_DATA)) return
         
         let levels: string[] = []
+        // round 1
+        // ["b", "c", "a"]
+        // round 2
+        // ["c", "a", "b"]
+        // round 3
+        // ["a", "b", "c"]
         if (this.levels.length == 2) {
             levels = this.levels.toReversed()
         } else {
