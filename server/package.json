@@ -18,6 +18,6 @@
   },
   "scripts": {
     "dev": "tsc && tsc-alias && node out/main.js",
-    "build": "tsc"
+    "build": "tsc && tsc-alias"
   }
 }
