@@ -89,6 +89,8 @@ wss.on("connection", (socket) => {
     socket.on("close", (code, reason) => {
         disconnectFromLobby(data, state)
     })
+
+    socket.on("error", console.error)
 })
 
 app.get("/", (req, res) => {
