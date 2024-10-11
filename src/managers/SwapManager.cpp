@@ -189,6 +189,7 @@ void SwapManager::registerListeners() {
 
         auto lvl = gmd::importGmdAsLevel(filePath);
         if (lvl) {
+            levelId = EditorIDs::getID(*lvl);
             LocalLevelManager::get()->m_localLevels->insertObject(*lvl, 0);
 
             auto scene = EditLevelLayer::scene(*lvl);
