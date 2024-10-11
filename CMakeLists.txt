@@ -25,7 +25,11 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 set(USE_ZLIB OFF)
-set(USE_MBED_TLS ON)
+if (NOT APPLE)
+    set(USE_MBED_TLS ON)
+endif()
+
+set(USE_OPEN_SSL OFF)
 set(USE_TLS ON)
 SET(CMAKE_C_SIMULATE_ID "Clang")
 set(ENABLE_PROGRAMS OFF)
