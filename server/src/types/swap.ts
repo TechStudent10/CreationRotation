@@ -72,11 +72,10 @@ export class Swap {
 
     scheduleNextSwap() {
         if (this.swapEnded) return
-        console.log("scheduling swap for 10 seconds (THIS IS HARDCODED CHANGE THIS BEFORE RELEASE PLEASE I BEG OF YOU)")
         this.timeout = setTimeout(() => {
             console.log("swap time!")
             this.swap()
-        }, 10_000) // TODO: make this the actual time, this is 20s
+        }, this.lobby.settings.minutesPerTurn * 1_000)
     }
 
     unscheduleNextSwap() {
