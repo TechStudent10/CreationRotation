@@ -81,10 +81,14 @@ class $modify(CREditorUI, EditorUI) {
 	void showUI(bool shouldShow) {
 		EditorUI::showUI(shouldShow);
 
+		if (!m_fields->timerLabel) return;
+
 		m_fields->timerLabel->setVisible(shouldShow);
 	}
 
 	void updateTimer(float dt) {
+		if (!m_fields->timerLabel) return;
+
 		auto& sm = SwapManager::get();
 
 		auto timeDur = std::chrono::duration<int>(sm.getTimeRemaining());
