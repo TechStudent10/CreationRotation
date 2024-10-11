@@ -6,6 +6,7 @@ import WebSocket from "ws"
 export interface SocketData {
     currentLobbyCode?: string
     account?: Account
+    loggedIn?: boolean
 }
 
 export type ServerState = {

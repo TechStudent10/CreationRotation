@@ -51,7 +51,17 @@ wss.on("connection", (socket) => {
             let modVersion = loginJson.version.replace("v", "")
             if (modVersion !== version) {
                 socket.close(1000, `version mismatch: mod version <cy>${modVersion}</c> does not equal server version <cy>${version}</c>`)
+                return
             }
+            data.loggedIn = true
+            return
+        }
+
+        if (!data.loggedIn) {
+            socket.close(
+                1000,
+                "did not recieve login data; cannot proceed"
+            )
             return
         }
 
