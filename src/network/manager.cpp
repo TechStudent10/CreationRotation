@@ -20,6 +20,12 @@ void NetworkManager::connect() {
 
     socket.setPingInterval(15);
 
+#ifdef GEODE_IS_ANDROID
+    ix::SocketTLSOptions tlsOptions;
+    tlsOptions.caFile = "certs/cacert-2024-09-24.pem"_spr;
+    socket.setTLSOptions(tlsOptions);
+#endif
+
     socket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
         if (msg->type == ix::WebSocketMessageType::Error) {
             const auto errReason = msg->errorInfo.reason;
