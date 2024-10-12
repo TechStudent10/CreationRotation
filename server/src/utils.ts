@@ -2,14 +2,12 @@ import { Packet, ServerToClientEvents } from "@/types/packet"
 import { SocketData, ServerState } from "@/types/state"
 import WebSocket from "ws"
 
-export function offsetArray(arr: string[], n: number): string[] {
-    let result: string[] = Array(arr.length).fill("")
+export function offsetArray(arr: any[], n: number): any[] {
+    let array = [...arr]
 
-    arr.forEach((v, i) => {
-        result[(i + n) % arr.length] = v
-    })
-
-    return result
+    const len = array.length
+    array.push(...array.splice(0, (-n % len + len) % len))
+    return array
 }
 
 export function sendPacket(socket: WebSocket, packetId: Packet, args: ServerToClientEvents[typeof packetId]) {

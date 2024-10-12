@@ -16,6 +16,7 @@ export interface Swap {
 
     totalTurns: number
     swapEnded: boolean
+    swapOrder: number[]
 
     serverState: ServerState
 
@@ -34,8 +35,11 @@ export class Swap {
         this.totalTurns = getLength(this.lobby.accounts) * this.lobby.settings.turns
 
         this.levels = []
-    }
 
+        // initialize swap order
+        this.swapOrder = offsetArray([...Array(this.lobby.accounts.length).keys()], 1)
+    }
+    
     swap() {
         this.levels = Array(getLength(this.lobby.accounts)).fill(DUMMY_LEVEL_DATA)
         this.currentTurn++
@@ -43,25 +47,13 @@ export class Swap {
     }
 
     addLevel(level: string, accIdx: number) {
-        this.levels[accIdx] = level
+        const idx = this.swapOrder.indexOf(accIdx)
+        console.log(accIdx, idx)
+        this.levels[idx] = level
         console.log(this.levels)
         if (this.levels.includes(DUMMY_LEVEL_DATA)) return
         
-        let levels: string[] = []
-        // round 1
-        // ["b", "c", "a"]
-        // round 2
-        // ["c", "a", "b"]
-        // round 3
-        // ["a", "b", "c"]
-        if (this.levels.length == 2) {
-            levels = this.levels.toReversed()
-        } else {
-            levels = offsetArray(this.levels, this.currentTurn)
-        }
-        console.log("a", levels)
-
-        emitToLobby(this.serverState, this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels })
+        emitToLobby(this.serverState, this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels: this.levels })
 
         console.log("current turn:", this.currentTurn)
         console.log("total turns (accs x settings.turns):", this.totalTurns)
@@ -81,7 +73,7 @@ export class Swap {
         this.timeout = setTimeout(() => {
             console.log("swap time!")
             this.swap()
-        }, this.lobby.settings.minutesPerTurn * 60_000)
+        }, 10_000) // this.lobby.settings.minutesPerTurn * 60_000
     }
 
     unscheduleNextSwap() {
