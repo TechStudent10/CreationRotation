@@ -16,7 +16,7 @@
 			"resources/*.png"
 		],
 		"files": [
-			"certs/*.pem"
+			"resources/certs/*.pem"
 		]
 	},
 	"dependencies": [
