@@ -73,7 +73,7 @@ export class Swap {
         this.timeout = setTimeout(() => {
             console.log("swap time!")
             this.swap()
-        }, 10_000) // this.lobby.settings.minutesPerTurn * 60_000
+        }, this.lobby.settings.minutesPerTurn * 60_000)
     }
 
     unscheduleNextSwap() {
