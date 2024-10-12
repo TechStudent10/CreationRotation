@@ -195,7 +195,8 @@ void SwapManager::registerListeners() {
             #ifdef GEODE_IS_MACOS
             try {
             #endif
-            auto scene = EditLevelLayer::scene(*lvl);
+            auto scene = CCScene::create();
+            scene->addChild(EditLevelLayer::create(*lvl));
             cr::utils::replaceScene(scene);
             #ifdef GEODE_IS_MACOS
             } catch (std::exception e) {}
