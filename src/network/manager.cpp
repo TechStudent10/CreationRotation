@@ -22,7 +22,7 @@ void NetworkManager::connect() {
 
 #ifdef GEODE_IS_ANDROID
     ix::SocketTLSOptions tlsOptions;
-    tlsOptions.caFile = "certs/cacert-2024-09-24.pem"_spr;
+    tlsOptions.caFile = (Mod::get()->getResourcesDir() / "cacert-2024-09-24.pem").string();
     socket.setTLSOptions(tlsOptions);
 #endif
 
