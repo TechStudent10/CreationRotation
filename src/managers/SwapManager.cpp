@@ -192,8 +192,14 @@ void SwapManager::registerListeners() {
             levelId = EditorIDs::getID(*lvl);
             LocalLevelManager::get()->m_localLevels->insertObject(*lvl, 0);
 
+            #ifdef GEODE_IS_MACOS
+            try {
+            #endif
             auto scene = EditLevelLayer::scene(*lvl);
             cr::utils::replaceScene(scene);
+            #ifdef GEODE_IS_MACOS
+            } catch (std::exception e) {}
+            #endif
         }
 
         roundStartedTime = time(0);
