@@ -161,7 +161,7 @@ void SwapManager::registerListeners() {
             fakePauseLayer->saveLevel();
         }
         auto lvl = EditorIDs::getLevelByID(levelId);
-        lvl->m_levelDesc = fmt::format("from: {}", this->createAccountType().name);
+        // lvl->m_levelDesc = fmt::format("from: {}", this->createAccountType().name);
         auto res = gmd::exportLevelAsGmd(lvl, filePath);
 
         std::ifstream lvlIn(filePath);
@@ -195,8 +195,7 @@ void SwapManager::registerListeners() {
             #ifdef GEODE_IS_MACOS
             try {
             #endif
-            auto scene = CCScene::create();
-            scene->addChild(EditLevelLayer::create(*lvl));
+            auto scene = EditLevelLayer::scene(*lvl);
             cr::utils::replaceScene(scene);
             #ifdef GEODE_IS_MACOS
             } catch (std::exception e) {}
