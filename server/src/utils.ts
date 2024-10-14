@@ -71,11 +71,25 @@ export function disconnectFromLobby(data: SocketData, state: ServerState) {
             delete state.kickedUsers[lobbyCode]
             delete state.sockets[lobbyCode]
 
-            if (Object.keys(state.swaps).includes(lobbyCode)) {
+            isDeletingLobby = true
+        }
+        if (Object.keys(state.swaps).includes(lobbyCode)) {
+            if (isDeletingLobby) {
                 state.swaps[lobbyCode].unscheduleNextSwap()
                 delete state.swaps[lobbyCode]
+            } else {
+                const accIdx = state.swaps[lobbyCode].accountIndexes.findIndex((acc) => acc.accID == data.account?.userID)
+                const swapIdx = state.swaps[lobbyCode].swapOrder.indexOf(
+                    state.swaps[lobbyCode].accountIndexes[accIdx].index
+                )
+                state.swaps[lobbyCode].swapOrder.splice(swapIdx, 1)
+                
+                if (state.swaps[lobbyCode].levels.length !== 0) {
+                    state.swaps[lobbyCode].levels.splice(swapIdx, 1)
+                }
+
+                state.swaps[lobbyCode].checkSwap()
             }
-            isDeletingLobby = true
         }
     }
     console.log(`disconnected ${account.name} (${account.userID}) from lobby with code ${data.currentLobbyCode}`)

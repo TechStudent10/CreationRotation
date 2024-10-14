@@ -7,6 +7,8 @@ import {
 import { Packet } from "./packet"
 import { ServerState } from "./state"
 
+export type AccsWithIdx = Array<{ index: number, accID: number }>
+
 export interface Swap {
     lobbyCode: string
     lobby: Lobby
@@ -17,6 +19,9 @@ export interface Swap {
     totalTurns: number
     swapEnded: boolean
     swapOrder: number[]
+    currentlySwapping: boolean
+
+    accountIndexes: AccsWithIdx
 
     serverState: ServerState
 
@@ -26,7 +31,7 @@ export interface Swap {
 const DUMMY_LEVEL_DATA = "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA"
 
 export class Swap {
-    constructor(lobbyCode: string, state: ServerState) {
+    constructor(lobbyCode: string, state: ServerState, accs: AccsWithIdx) {
         this.lobbyCode = lobbyCode
         this.lobby = state.lobbies[lobbyCode]
         this.currentTurn = 0
@@ -35,28 +40,38 @@ export class Swap {
         this.totalTurns = getLength(this.lobby.accounts) * this.lobby.settings.turns
 
         this.levels = []
+        this.accountIndexes = accs
+
+        this.currentlySwapping = false
 
         // initialize swap order
         this.swapOrder = offsetArray([...Array(this.lobby.accounts.length).keys()], 1)
     }
     
-    swap() {
-        this.levels = Array(getLength(this.lobby.accounts)).fill(DUMMY_LEVEL_DATA)
+    private swap() {
+        this.levels = Array(getLength(this.swapOrder)).fill(DUMMY_LEVEL_DATA)
         this.currentTurn++
+        this.currentlySwapping = true
         emitToLobby(this.serverState, this.lobbyCode, Packet.TimeToSwapPacket, {})
     }
 
     addLevel(level: string, accIdx: number) {
         const idx = this.swapOrder.indexOf(accIdx)
-        console.log(accIdx, idx)
         this.levels[idx] = level
-        console.log(this.levels)
+        this.checkSwap()
+    }
+
+    checkSwap() {
+        if (!this.currentlySwapping) return
         if (this.levels.includes(DUMMY_LEVEL_DATA)) return
-        
+        this.currentlySwapping = false
+
         emitToLobby(this.serverState, this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels: this.levels })
 
         console.log("current turn:", this.currentTurn)
         console.log("total turns (accs x settings.turns):", this.totalTurns)
+
+        this.levels = []
 
         if (this.currentTurn >= this.totalTurns) {
             this.swapEnded = true

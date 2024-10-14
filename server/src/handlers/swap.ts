@@ -3,7 +3,7 @@ import {
     sendError,
     emitToLobby
 } from "@/utils"
-import { Swap } from "@/types/swap"
+import { Swap, AccsWithIdx } from "@/types/swap"
 import { Packet } from "@/types/packet"
 
 const swapHandlers: Handlers = {
@@ -22,7 +22,7 @@ const swapHandlers: Handlers = {
             return
         }
 
-        let accs: Array<{ index: number, accID: number }> = []
+        let accs: AccsWithIdx = []
 
         state.lobbies[lobbyCode].accounts.forEach((account, index) => {
             console.log({ index, accID: account.userID })
@@ -33,7 +33,7 @@ const swapHandlers: Handlers = {
         })
         emitToLobby(state, lobbyCode, Packet.SwapStartedPacket, { accounts: accs })
 
-        state.swaps[lobbyCode] = new Swap(lobbyCode, state)
+        state.swaps[lobbyCode] = new Swap(lobbyCode, state, accs)
         state.swaps[lobbyCode].scheduleNextSwap()
     },
     
