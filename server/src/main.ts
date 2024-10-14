@@ -7,6 +7,8 @@ import { Handlers } from "@/types/handlers"
 import { SocketData, LoginInfo, ServerState } from "./types/state"
 import { disconnectFromLobby, getLength } from "./utils"
 
+import pako from "pako"
+
 const app = express()
 const httpServer = createServer(app)
 const wss = new WebSocket.Server({ server: httpServer })
@@ -65,11 +67,12 @@ wss.on("connection", (socket) => {
             return
         }
 
-        const args = JSON.parse(sdata.toString())
+        const inflatedData = pako.inflate(sdata as Buffer, { to: "string" }).toString()
+        const args = JSON.parse(inflatedData.toString())
         if (!args || typeof args !== "object") {
             console.error("[PACKET] recieved invalid packet string")
             return
-        }
+        }   
         const packetId = args["packet_id"]
 
         if (!Object.keys(handlers).includes(String(packetId))) {

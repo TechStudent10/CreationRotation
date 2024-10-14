@@ -7,10 +7,12 @@
   "private": true,
   "dependencies": {
     "express": "^4.19.2",
+    "pako": "^2.1.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/pako": "^2.0.3",
     "@types/ws": "^8.5.12",
     "tsc": "^2.0.4",
     "tsc-alias": "^1.8.10",

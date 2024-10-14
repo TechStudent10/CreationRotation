@@ -161,6 +161,9 @@ void SwapManager::registerListeners() {
             fakePauseLayer->saveLevel();
         }
         auto lvl = EditorIDs::getLevelByID(levelId);
+        // this crashes macos when recieving the level
+        // do not ask me why
+        // this game is taped-together jerry-rigged piece of software
         // lvl->m_levelDesc = fmt::format("from: {}", this->createAccountType().name);
         auto res = gmd::exportLevelAsGmd(lvl, filePath);
 
@@ -175,12 +178,16 @@ void SwapManager::registerListeners() {
         GameLevelManager::sharedState()->deleteLevel(lvl);
 
         nm.send(
-            SendLevelPacket::create(currentLobbyCode, swapIdx, levelStr.str())
+            SendLevelPacket::create(
+                currentLobbyCode,
+                swapIdx,
+                levelStr.str()
+            )
         );
     });
     nm.on<RecieveSwappedLevelPacket>([this](RecieveSwappedLevelPacket* packet) {
-        auto gmdStr = std::string(packet->levels[swapIdx]);
-        log::info("{}", packet->levels[swapIdx]);
+        auto gmdStr = packet->levels[swapIdx];
+        log::info("{}", gmdStr);
 
         auto filePath = std::filesystem::temp_directory_path() / fmt::format("temp{}.gmd", rand());
         std::ofstream ostream(filePath);
@@ -208,7 +215,9 @@ void SwapManager::registerListeners() {
     });
     nm.on<SwapEndedPacket>([this](SwapEndedPacket* p) {
         log::debug("swap ended; disconnecting from server");
-        NetworkManager::get().disconnect();
+        auto& nm = NetworkManager::get();
+        nm.showDisconnectPopup = false;
+        nm.disconnect();
         FLAlertLayer::create(
             "Creation Rotation",
             "The Creation Rotation level swap has <cy>ended!</c>\nHope you had fun! :D\n\n<cl>You have been disconnected from the Creation Rotation server.</c>",

@@ -83,7 +83,20 @@ public:
         }
         auto json = matjson::parse(ss.str());
         json["packet_id"] = packet->getPacketID();
-        socket.send(json.dump(0));
+        auto uncompressedStr = json.dump(0);
+        unsigned char* compressedData;
+
+        size_t compressedSize = ZipUtils::ccDeflateMemory(
+            reinterpret_cast<unsigned char*>(uncompressedStr.data()),
+            uncompressedStr.size(),
+            &compressedData
+        );
+        socket.sendBinary(
+            std::string(std::string_view(
+                reinterpret_cast<const char*>(compressedData),
+                compressedSize
+            ))
+        );
     }
 protected:
     NetworkManager();
