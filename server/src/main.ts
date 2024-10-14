@@ -37,10 +37,6 @@ handlerFiles.forEach(async (handlerName) => {
 wss.on("connection", (socket) => {
     let data: SocketData = {}
 
-    // i think it's time for more uh...
-    // professional logs
-
-    // console.log("we got ourselves a little GOOBER here\na professional FROLICKER")
     console.log(`new connection! ${socket.url}`)
 
     socket.on("message", (sdata) => {

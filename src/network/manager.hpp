@@ -27,7 +27,7 @@ public:
 
     bool isConnected = false;
 
-    void connect();
+    void connect(bool shouldReconnect = true);
     void disconnect();
 
     template<typename T>

@@ -69,7 +69,10 @@ bool LobbySelectPopup::setup() {
 
     m_mainLayer->addChildAtPosition(mainMenu, Anchor::Center);
 
-    NetworkManager::get().setDisconnectCallback([this](std::string reason) {
+    auto& nm = NetworkManager::get();
+    nm.showDisconnectPopup = true;
+    nm.setDisconnectCallback([this](std::string reason) {
+        if (this->m_closeBtn) return;
         this->m_closeBtn->activate();
     });
 

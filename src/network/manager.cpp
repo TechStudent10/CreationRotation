@@ -4,9 +4,9 @@ NetworkManager::NetworkManager() {
     ix::initNetSystem();
 }
 
-void NetworkManager::connect() {
+void NetworkManager::connect(bool shouldReconnect) {
     log::debug("connecting");
-    if (this->isConnected) {
+    if (this->isConnected && shouldReconnect) {
         // disconnect then reconnect
         log::debug("already connected; disconnecting then reconnecting...");
         this->disconnect();
