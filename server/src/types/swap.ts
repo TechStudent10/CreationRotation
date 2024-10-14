@@ -68,15 +68,11 @@ export class Swap {
 
         emitToLobby(this.serverState, this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels: this.levels })
 
-        console.log("current turn:", this.currentTurn)
-        console.log("total turns (accs x settings.turns):", this.totalTurns)
-
         this.levels = []
 
         if (this.currentTurn >= this.totalTurns) {
             this.swapEnded = true
             setTimeout(() => emitToLobby(this.serverState, this.lobbyCode, Packet.SwapEndedPacket, {}), 750) // 0.75 seconds
-            console.log("swap ended!")
             
             return
         }
@@ -86,7 +82,6 @@ export class Swap {
     scheduleNextSwap() {
         if (this.swapEnded) return
         this.timeout = setTimeout(() => {
-            console.log("swap time!")
             this.swap()
         }, this.lobby.settings.minutesPerTurn * 60_000)
     }

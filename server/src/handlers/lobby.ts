@@ -10,7 +10,6 @@ import { Lobby } from "@/types/lobby"
 
 const lobbyHandlers: Handlers = {
     2001: (socket, args, _, state) => { // CreateLobbyPacket (response: LobbyCreatedPacket)
-        console.log(args)
         const newLobby: Lobby = {
             code: generateCode(),
             accounts: [],
@@ -19,7 +18,6 @@ const lobbyHandlers: Handlers = {
         state.sockets[newLobby.code] = {}
         state.kickedUsers[newLobby.code] = []
         state.lobbies[newLobby.code] = newLobby
-        console.log(newLobby.code)
 
         sendPacket(
             socket,
@@ -48,8 +46,6 @@ const lobbyHandlers: Handlers = {
         console.log(`user ${account.name} has joined lobby ${state.lobbies[code].settings.name}`)
         data.currentLobbyCode = code
         data.account = args.account
-
-        console.log(data)
 
         sendPacket(socket, Packet.JoinedLobbyPacket, {})
 
@@ -92,12 +88,7 @@ const lobbyHandlers: Handlers = {
 
         const { code: _, ...newArgs } = args
 
-        console.log(args)
-
-        console.log("---")
-
         const oldSettings = state.lobbies[code].settings
-        console.log(oldSettings)
         state.lobbies[code].settings = {
             ...oldSettings,
             ...newArgs.settings

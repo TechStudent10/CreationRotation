@@ -25,7 +25,6 @@ const swapHandlers: Handlers = {
         let accs: AccsWithIdx = []
 
         state.lobbies[lobbyCode].accounts.forEach((account, index) => {
-            console.log({ index, accID: account.userID })
             accs.push({
                 index: index,
                 accID: account.userID

@@ -26,7 +26,6 @@ SwapManager::SwapManager() {
 
 LobbySettings SwapManager::createDefaultSettings() {
     auto acc = SwapManager::createAccountType();
-    log::info("{}", acc.userID);
 
     return {
         .name = fmt::format("{}'s Lobby", acc.name),
@@ -187,7 +186,6 @@ void SwapManager::registerListeners() {
     });
     nm.on<RecieveSwappedLevelPacket>([this](RecieveSwappedLevelPacket* packet) {
         auto gmdStr = packet->levels[swapIdx];
-        log::info("{}", gmdStr);
 
         auto filePath = std::filesystem::temp_directory_path() / fmt::format("temp{}.gmd", rand());
         std::ofstream ostream(filePath);

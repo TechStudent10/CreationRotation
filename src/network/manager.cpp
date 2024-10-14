@@ -92,7 +92,6 @@ void NetworkManager::disconnect() {
 
 void NetworkManager::onMessage(const ix::WebSocketMessagePtr& msg) {
     auto strMsg = msg.get()->str;
-    log::debug("raw string: {}", strMsg);
 
     auto packetIdIdx = strMsg.find("|");
     if (packetIdIdx == std::string::npos) {
@@ -103,15 +102,10 @@ void NetworkManager::onMessage(const ix::WebSocketMessagePtr& msg) {
     auto packetStr = strMsg.substr(packetIdIdx + 1);
     auto packetId = geode::utils::numFromString<int>(strMsg.substr(0, packetIdIdx)).unwrapOr(0);
 
-    log::debug("packet ID: {}", packetId);
-    log::debug("packet Str: {}", packetStr);
-
     if (!listeners.contains(packetId)) {
         log::error("unhandled packed ID {}", packetId);
         return;
     }
-
-    log::debug("recieved and handling packet {}", packetId);
 
     listeners.at(packetId)(packetStr);
 }
