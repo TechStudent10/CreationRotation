@@ -70,4 +70,21 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           replace: true
+        
+      - uses: actions/download-artifact@v4
+        with:
+          name: Build Output
+          path: build-output
+
+      - uses: andelf/nightly-release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: nightly
+          name: 'Development Release'
+          body: |
+            Geode development release for commit ${{ github.sha }}. Since this is not a regular release, Geode will not install the resources automatically, so you should use the installer if you want them.
+          files: |
+            ./build-output/*.geode
+            ./build-output/*.pdb
 
