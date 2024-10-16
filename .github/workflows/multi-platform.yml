@@ -83,7 +83,7 @@ jobs:
           tag_name: nightly
           name: 'Development Release'
           body: |
-            Geode development release for commit ${{ github.sha }}. Since this is not a regular release, Geode will not install the resources automatically, so you should use the installer if you want them.
+            Creation Rotation nightly release for ${{ github.sha }}. Do not expect a stable experience from a build here.
           files: |
             ./build-output/*.geode
             ./build-output/*.pdb
