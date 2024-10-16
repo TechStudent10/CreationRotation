@@ -40,6 +40,7 @@ jobs:
           bindings: geode-sdk/bindings
           bindings-ref: main
           combine: true
+          build-target: RelWithDebInfo
           # sdk: nightly
           target: ${{ matrix.config.target }}
 
