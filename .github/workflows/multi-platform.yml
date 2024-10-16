@@ -81,7 +81,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: nightly
-          name: 'Development Release'
+          name: 'CR Nightly Release'
           body: |
             Creation Rotation nightly release for ${{ github.sha }}. Do not expect a stable experience from a build here.
           files: |
