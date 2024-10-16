@@ -8,6 +8,7 @@ import { SocketData, LoginInfo, ServerState } from "./types/state"
 import { disconnectFromLobby, getLength } from "./utils"
 
 import pako from "pako"
+import log from "./logging"
 
 const app = express()
 const httpServer = createServer(app)
@@ -24,26 +25,26 @@ let state: ServerState = {
 const handlerFiles = ["lobby", "swap"]
 
 handlerFiles.forEach(async (handlerName) => {
+    try {
     const importedHandlers =
         (await import(`./handlers/${handlerName}`)).default as Handlers | undefined
     
-    if (importedHandlers) {
-        handlers = {...handlers, ...importedHandlers}
-    } else {
-        console.error(`[ERROR] unable to add handlers for file "${handlerName}". did you remember to use \`export default\`?`)
+    handlers = {...handlers, ...importedHandlers}
+    } catch {
+        log.error(`unable to add handlers for file "${handlerName}". did you remember to use \`export default\`?`)
     }
 })
 
 wss.on("connection", (socket) => {
     let data: SocketData = {}
 
-    console.log(`new connection! ${socket.url}`)
+    log.info(`new connection! ${socket.url}`)
 
     socket.on("message", (sdata) => {
         if (sdata.toString().startsWith("login")) {
             const loginJson = JSON.parse(sdata.toString().split("|", 2)[1]) as LoginInfo
             if (!loginJson || typeof loginJson !== "object") {
-                console.error("[LOGIN] recieved invalid login information")
+                log.log("login", `recieved invalid login information`)
                 return
             }
             let modVersion = loginJson.version.replace("v", "")
@@ -66,17 +67,17 @@ wss.on("connection", (socket) => {
         const inflatedData = pako.inflate(sdata as Buffer, { to: "string" }).toString()
         const args = JSON.parse(inflatedData.toString())
         if (!args || typeof args !== "object") {
-            console.error("[PACKET] recieved invalid packet string")
+            log.packet("recieved invalid packet string")
             return
         }   
         const packetId = args["packet_id"]
 
         if (!Object.keys(handlers).includes(String(packetId))) {
-            console.log(`[PACKET] unhandled packet ${packetId}`)
+            log.packet(`unhandled packet ${packetId}`)
             return
         }
 
-        console.log(`[PACKET] handling packet ${packetId}`)
+        log.packet(`handling packet ${packetId}`)
 
         // we love committing javascript war crimes
         const handlerFunc = handlers[packetId as any]
@@ -89,7 +90,7 @@ wss.on("connection", (socket) => {
         disconnectFromLobby(data, state)
     })
 
-    socket.on("error", console.error)
+    socket.on("error", log.error)
 })
 
 app.get("/", (req, res) => {
@@ -113,5 +114,5 @@ app.get("/stats", (req, res) => {
 
 const port = process.env.PORT || 3000
 
-console.log(`listening on port ${port}`)
+log.info(`listening on port ${port}`)
 httpServer.listen(port)

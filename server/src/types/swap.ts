@@ -6,6 +6,7 @@ import {
 } from "@/utils"
 import { Packet } from "./packet"
 import { ServerState } from "./state"
+import log from "@/logging"
 
 export type AccsWithIdx = Array<{ index: number, accID: number }>
 
@@ -45,13 +46,16 @@ export class Swap {
         this.currentlySwapping = false
 
         // initialize swap order
-        this.swapOrder = offsetArray([...Array(this.lobby.accounts.length).keys()], 1)
+        this.swapOrder = offsetArray(
+            [...Array(accs.length).keys()],
+        1)
     }
     
     private swap() {
         this.levels = Array(getLength(this.swapOrder)).fill(DUMMY_LEVEL_DATA)
         this.currentTurn++
         this.currentlySwapping = true
+        log.debug(this.swapOrder)
         emitToLobby(this.serverState, this.lobbyCode, Packet.TimeToSwapPacket, {})
     }
 
@@ -83,7 +87,7 @@ export class Swap {
         if (this.swapEnded) return
         this.timeout = setTimeout(() => {
             this.swap()
-        }, this.lobby.settings.minutesPerTurn * 60_000)
+        }, 10_000) // this.lobby.settings.minutesPerTurn * 60_000
     }
 
     unscheduleNextSwap() {

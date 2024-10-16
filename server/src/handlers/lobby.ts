@@ -7,6 +7,7 @@ import {
 } from "@/utils"
 import { Packet } from "@/types/packet"
 import { Lobby } from "@/types/lobby"
+import log from "@/logging"
 
 const lobbyHandlers: Handlers = {
     2001: (socket, args, _, state) => { // CreateLobbyPacket (response: LobbyCreatedPacket)
@@ -43,7 +44,7 @@ const lobbyHandlers: Handlers = {
         }
         state.lobbies[code].accounts.push(account)
         state.sockets[code][account.userID] = socket
-        console.log(`user ${account.name} has joined lobby ${state.lobbies[code].settings.name}`)
+        log.info(`user ${account.name} has joined lobby ${state.lobbies[code].settings.name}`)
         data.currentLobbyCode = code
         data.account = args.account
 

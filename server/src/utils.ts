@@ -1,5 +1,7 @@
 import { Packet, ServerToClientEvents } from "@/types/packet"
 import { SocketData, ServerState } from "@/types/state"
+import log from "@/logging"
+
 import WebSocket from "ws"
 
 export function offsetArray(arr: any[], n: number): any[] {
@@ -23,7 +25,7 @@ export function sendPacket(socket: WebSocket, packetId: Packet, args: ServerToCl
         realArgs = args
     }
     socket.send(`${packetId}|${JSON.stringify({ packet: realArgs })}`)
-    console.log(`[PACKET] sent packet ${packetId}`)
+    log.packet(`sent packet ${packetId}`)
 }
 
 export function sendError(socket: WebSocket, error: string) {
@@ -53,8 +55,8 @@ export function getLength(obj: any) {
 
 export function disconnectFromLobby(data: SocketData, state: ServerState) {
     const { currentLobbyCode: lobbyCode, account } = data;
-    if (!lobbyCode) { console.log("could not find lobby"); return}
-    if (!account) { console.log("could not find account"); return }
+    if (!lobbyCode) { log.error("could not find lobby"); return}
+    if (!account) { log.error("could not find account"); return }
     let isDeletingLobby = false
     if (Object.keys(state.lobbies).includes(lobbyCode)) {
         const index = state.lobbies[lobbyCode].accounts.map(e => e.userID).indexOf(account.userID)
@@ -92,7 +94,7 @@ export function disconnectFromLobby(data: SocketData, state: ServerState) {
             }
         }
     }
-    console.log(`disconnected ${account.name} (${account.userID}) from lobby with code ${data.currentLobbyCode}`)
+    log.info(`disconnected ${account.name} (${account.userID}) from lobby with code ${data.currentLobbyCode}`)
     if (!isDeletingLobby) {
         broadcastLobbyUpdate(state, lobbyCode)
     }
