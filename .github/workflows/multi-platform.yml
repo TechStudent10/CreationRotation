@@ -41,6 +41,7 @@ jobs:
           bindings-ref: main
           combine: true
           build-target: RelWithDebInfo
+          export-pdb: true
           # sdk: nightly
           target: ${{ matrix.config.target }}
 
