@@ -25,6 +25,9 @@ bool LobbyJoinPopup::setup() {
     label->setScale(0.45f);
 
     auto input = TextInput::create(100.f, "Code");
+    input->setPasswordMode(
+        Mod::get()->getSettingValue<bool>("hide-code")
+    );
 
     auto submitBtn = CCMenuItemExt::createSpriteExtra(
         ButtonSprite::create("Submit"),

@@ -43,6 +43,12 @@
 			"default": "wss://creationrotation.prevter.me",
 			"description": "The Creation Rotation server URL",
 			"filter": "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM.:/"
+		},
+		"hide-code": {
+			"name": "Hide Lobby Code",
+			"type": "bool",
+			"default": false,
+			"description": "Hides the lobby code on the lobby screen and the join popup"
 		}
 	}
 }

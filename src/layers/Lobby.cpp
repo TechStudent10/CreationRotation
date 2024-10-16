@@ -253,7 +253,12 @@ void LobbyLayer::refresh(LobbyInfo info) {
         mainLayer->addChild(menu);
     }
 
-    titleLabel->setString(fmt::format("{} ({})", info.settings.name, info.code).c_str());
+    titleLabel->setString(
+        fmt::format("{} ({})",
+            info.settings.name,
+            Mod::get()->getSettingValue<bool>("hide-code") ? "......" : info.code
+        ).c_str()
+    );
 
     if (playerList) playerList->removeFromParent();
 
