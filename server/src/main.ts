@@ -5,7 +5,7 @@ import { version } from "../package.json"
 
 import { Handlers } from "@/types/handlers"
 import { SocketData, LoginInfo, ServerState } from "./types/state"
-import { disconnectFromLobby, getLength } from "./utils"
+import { disconnectFromLobby, getLength, sendError } from "./utils"
 
 import pako from "pako"
 import log from "./logging"
@@ -64,7 +64,15 @@ wss.on("connection", (socket) => {
             return
         }
 
-        const inflatedData = pako.inflate(sdata as Buffer, { to: "string" }).toString()
+        let inflatedData: string;
+        try {
+            inflatedData = pako.inflate(sdata as Buffer, { to: "string" }).toString()
+        } catch (e) {
+            const errorStr = `error while attempting to decompress packet: ${e}`
+            log.error(errorStr)
+            sendError(socket, errorStr)
+            return
+        }
         const args = JSON.parse(inflatedData.toString())
         if (!args || typeof args !== "object") {
             log.packet("recieved invalid packet string")
