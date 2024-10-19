@@ -9,6 +9,7 @@ void NetworkManager::connect(bool shouldReconnect) {
     if (this->isConnected && shouldReconnect) {
         // disconnect then reconnect
         log::debug("already connected; disconnecting then reconnecting...");
+        this->showDisconnectPopup = false;
         this->disconnect();
     }
 
@@ -45,6 +46,7 @@ void NetworkManager::connect(bool shouldReconnect) {
                 {"version", Mod::get()->getVersion().toVString()}
             });
             socket.send(fmt::format("login|{}", matjson::Value(loginInfo).dump(0)));
+            this->showDisconnectPopup = true;
             Loader::get()->queueInMainThread([]() {
                 Notification::create(
                     "Connection sucessful!",

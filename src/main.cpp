@@ -42,7 +42,7 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 
 	void onMyButton(CCObject*) {
 		auto& nm = NetworkManager::get();
-		nm.connect(false);
+		nm.connect(true);
 		LobbySelectPopup::create()->show();
 	}
 };

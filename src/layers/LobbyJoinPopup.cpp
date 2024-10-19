@@ -6,7 +6,7 @@
 
 LobbyJoinPopup* LobbyJoinPopup::create() {
     auto ret = new LobbyJoinPopup;
-    if (ret->initAnchored(280.f, 180.f)) {
+    if (ret->initAnchored(140.f, 140.f)) {
         ret->autorelease();
         return ret;
     }
@@ -19,7 +19,7 @@ bool LobbyJoinPopup::setup() {
     this->setTitle("Join Lobby");
 
     auto label = CCLabelBMFont::create(
-        "Code",
+        "Lobby Code",
         "bigFont.fnt"
     );
     label->setScale(0.45f);
@@ -50,8 +50,8 @@ bool LobbyJoinPopup::setup() {
     submitMenu->addChild(submitBtn);
 
     m_mainLayer->addChildAtPosition(input, Anchor::Center);
-    m_mainLayer->addChildAtPosition(label, Anchor::Center, ccp(0, -15.f));
-    m_mainLayer->addChildAtPosition(submitMenu, Anchor::Bottom);
+    m_mainLayer->addChildAtPosition(label, Anchor::Center, ccp(0, 25.f));
+    m_mainLayer->addChildAtPosition(submitMenu, Anchor::Bottom, ccp(0, 25.f));
 
     return true;
 }

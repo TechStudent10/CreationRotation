@@ -38,7 +38,7 @@ protected:
         auto menu = CCMenu::create();
         menu->addChild(infoBtn);
         menu->setPosition({
-            100.f, CELL_HEIGHT / 2.f
+            nameLabel->getScaledContentWidth() + 15.f, CELL_HEIGHT / 2.f
         });
         menu->setAnchorPoint({
             0.f, 0.5f
