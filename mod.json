@@ -50,5 +50,13 @@
 			"default": false,
 			"description": "Hides the lobby code on the lobby screen and the join popup"
 		}
+	},
+	"links": {
+		"community": "https://discord.gg/U6FCeekqdt", 
+		"source": "https://github.com/TechStudent10/CreationRotation"
+	},
+	"issues": {
+		"info": "Report issues to the GH page",
+		"url": "https://github.com/TechStudent10/CreationRotation/issues"
 	}
 }
