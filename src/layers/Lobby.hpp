@@ -10,7 +10,7 @@ protected:
     bool init(Account account, float width, bool canKick);
     void onKickUser(CCObject*);
 public:
-    static constexpr int CELL_HEIGHT = 75.f;
+    static constexpr int CELL_HEIGHT = 50.f;
     static PlayerCell* create(Account account, float width, bool canKick);
 };
 

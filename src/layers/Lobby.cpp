@@ -44,15 +44,16 @@ bool PlayerCell::init(Account account, float width, bool canKick) {
         player->setGlowOutline(gm->colorForIdx(account.color3));
     }
 
+    player->setScale(0.65f);
     player->setPosition({ 25.f, CELL_HEIGHT / 2.f});
     player->setAnchorPoint({ 0.5f, 0.5f });
 
     this->addChild(player);
 
     auto nameLabel = CCLabelBMFont::create(account.name.c_str(), "bigFont.fnt");
-    nameLabel->limitLabelWidth(225.f, 1.f, 0.1f);
+    nameLabel->limitLabelWidth(225.f, 0.8f, 0.1f);
     nameLabel->setPosition({
-        55.f, CELL_HEIGHT / 2.f
+        45.f, CELL_HEIGHT / 2.f
     });
     nameLabel->setAnchorPoint({ 0.f, 0.5f });
     nameLabel->ignoreAnchorPointForPosition(false);
@@ -60,13 +61,15 @@ bool PlayerCell::init(Account account, float width, bool canKick) {
     this->addChild(nameLabel);
 
     if (canKick && account.userID != GameManager::get()->m_playerUserID.value()) {
+        auto kickSpr = CCSprite::createWithSpriteFrameName("accountBtn_removeFriend_001.png");
+        kickSpr->setScale(0.725f);
         auto kickBtn = CCMenuItemSpriteExtra::create(
-            CCSprite::createWithSpriteFrameName("accountBtn_removeFriend_001.png"), this, menu_selector(PlayerCell::onKickUser)
+            kickSpr, this, menu_selector(PlayerCell::onKickUser)
         );
         auto kickMenu = CCMenu::create();
         kickMenu->addChild(kickBtn);
         kickMenu->setPosition(
-            width - 30.f, CELL_HEIGHT / 2.f
+            width - 25.f, CELL_HEIGHT / 2.f
         );
         kickMenu->setAnchorPoint({ 0.5f, 0.5f });
         this->addChild(kickMenu);
@@ -325,6 +328,7 @@ void LobbyLayer::createBorders() {
     #define CREATE_SIDE() CCSprite::createWithSpriteFrameName("GJ_table_side_001.png")
     
     const int SIDE_OFFSET = 7;
+    const int TOP_BOTTOM_OFFSET = 8;
 
     // TOP //
 
@@ -335,7 +339,7 @@ void LobbyLayer::createBorders() {
     topSide->setRotation(90.f);
     topSide->setPosition({
         playerList->m_width / 2,
-        playerList->m_height
+        playerList->m_height + TOP_BOTTOM_OFFSET
     });
     topSide->setID("top-border");
     topSide->setZOrder(3);
@@ -349,7 +353,7 @@ void LobbyLayer::createBorders() {
     bottomSide->setRotation(-90.f);
     bottomSide->setPosition({
         playerList->m_width / 2,
-        0
+        0 - TOP_BOTTOM_OFFSET
     });
     bottomSide->setID("bottom-border");
     bottomSide->setZOrder(3);
@@ -358,7 +362,7 @@ void LobbyLayer::createBorders() {
 
     auto leftSide = CREATE_SIDE();
     leftSide->setScaleY(
-        playerList->getContentHeight() / leftSide->getContentHeight()
+        (playerList->getContentHeight() + TOP_BOTTOM_OFFSET) / leftSide->getContentHeight()
     );
     leftSide->setPosition({
         -SIDE_OFFSET,
@@ -370,7 +374,7 @@ void LobbyLayer::createBorders() {
 
     auto rightSide = CREATE_SIDE();
     rightSide->setScaleY(
-        playerList->getContentHeight() / rightSide->getContentHeight()
+        (playerList->getContentHeight() + TOP_BOTTOM_OFFSET) / rightSide->getContentHeight()
     );
     rightSide->setRotation(180.f);
     rightSide->setPosition({
