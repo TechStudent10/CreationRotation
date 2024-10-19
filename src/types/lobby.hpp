@@ -6,12 +6,14 @@
 
 struct LobbySettings {
     std::string name;
+    // std::string password;
     int turns;
     int owner;
     int minutesPerTurn;
 
     CR_SERIALIZE(
         CEREAL_NVP(name),
+        // CEREAL_NVP(password),
         CEREAL_NVP(turns),
         CEREAL_NVP(owner),
         CEREAL_NVP(minutesPerTurn)

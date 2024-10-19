@@ -10,5 +10,6 @@ export type LobbySettings = {
     name: string
     turns: number
     owner: number // owner user ID
+    // password?: string
     minutesPerTurn: number
 }

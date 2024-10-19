@@ -3,12 +3,13 @@
 enum LobbySettingType {
     Name,
     Turns,
-    MinsPerTurn
+    MinsPerTurn,
+    Password
 };
 
 class LobbySettingsCell : public CCNode {
 protected:
-    bool init(float width, std::string name, LobbySettingType type, std::string defaultStr = "", std::string filter = "") {
+    bool init(float width, std::string name, LobbySettingType type, std::string desc, std::string defaultStr = "", std::string filter = "") {
         this->type = type;
         
         this->setContentSize({
@@ -29,6 +30,21 @@ protected:
         nameLabel->limitLabelWidth(80.f, 0.5f, 0.1f);
         this->addChild(nameLabel);
 
+        auto infoBtn = InfoAlertButton::create(
+            name,
+            desc,
+            0.5f
+        );
+        auto menu = CCMenu::create();
+        menu->addChild(infoBtn);
+        menu->setPosition({
+            100.f, CELL_HEIGHT / 2.f
+        });
+        menu->setAnchorPoint({
+            0.f, 0.5f
+        });
+        this->addChild(menu);
+
         input = TextInput::create(95.f, name);
         input->setString(defaultStr);
         if (filter != "") input->getInputNode()->setAllowedChars(filter);
@@ -47,9 +63,9 @@ public:
     TextInput* input;
     LobbySettingType type;
 
-    static LobbySettingsCell* create(float width, std::string name, LobbySettingType type, std::string defaultStr = "", std::string filter = "") {
+    static LobbySettingsCell* create(float width, std::string name, LobbySettingType type, std::string desc, std::string defaultStr = "", std::string filter = "") {
         auto ret = new LobbySettingsCell;
-        if (ret->init(width, name, type, defaultStr, filter)) {
+        if (ret->init(width, name, type, desc, defaultStr, filter)) {
             ret->autorelease();
             return ret;
         }
@@ -60,7 +76,7 @@ public:
 
 LobbySettingsPopup* LobbySettingsPopup::create(LobbySettings settings, Callback callback) {
     auto ret = new LobbySettingsPopup;
-    if (ret->initAnchored(250.f, 280.f, settings, callback)) {
+    if (ret->initAnchored(250.f, 230.f, settings, callback)) {
         ret->autorelease();
         return ret;
     }
@@ -80,34 +96,37 @@ bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
 
     auto settingsContents = CCArray::create();
 
-    #define ADD_SETTING(name, element, type) settingsContents->addObject( \
+    #define ADD_SETTING(name, element, desc, type) settingsContents->addObject( \
         LobbySettingsCell::create( \
             220.f, \
             name,\
             LobbySettingType::type, \
+            desc, \
             settings.element \
         ));
 
-    #define ADD_SETTING_INT(name, element, type) settingsContents->addObject( \
+    #define ADD_SETTING_INT(name, element, desc, type) settingsContents->addObject( \
         LobbySettingsCell::create( \
             220.f, \
             name,\
             LobbySettingType::type, \
+            desc, \
             std::to_string(settings.element), \
             "0123456789" \
         ));
 
-    ADD_SETTING("Name", name, Name)
-    ADD_SETTING_INT("Turns", turns, Turns)
-    ADD_SETTING_INT("Minutes per turn", minutesPerTurn, MinsPerTurn)
+    ADD_SETTING("Name", name, "Name of the lobby", Name)
+    ADD_SETTING_INT("Turns", turns, "Number of turns per level", Turns)
+    ADD_SETTING_INT("Minutes per turn", minutesPerTurn, "Amount of minutes per turn", MinsPerTurn)
+    // ADD_SETTING("Password", password, Password)
 
-    auto settingsList = ListView::create(settingsContents, LobbySettingsCell::CELL_HEIGHT, 220.f, 225.f);
+    auto settingsList = ListView::create(settingsContents, LobbySettingsCell::CELL_HEIGHT, 220.f, 180.f);
     settingsList->ignoreAnchorPointForPosition(false);
 
     auto border = Border::create(
         settingsList,
         {0, 0, 0, 75},
-        {220.f, 225.f}
+        {220.f, 180.f}
     );
     if(CCScale9Sprite* borderSprite = typeinfo_cast<CCScale9Sprite*>(border->getChildByID("geode.loader/border_sprite"))) {
         float scaleFactor = 1.7f;
@@ -142,6 +161,10 @@ bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
                         newSettings.minutesPerTurn = geode::utils::numFromString<int>(
                             cell->input->getString()
                         ).unwrapOr(1);
+                        break;
+                    }
+                    case Password: {
+                        // newSettings.password = cell->input->getString();
                         break;
                     }
                 }
