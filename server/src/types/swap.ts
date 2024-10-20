@@ -67,6 +67,13 @@ export class Swap {
 
     checkSwap() {
         if (!this.currentlySwapping) return
+        this.accountIndexes.forEach(acc => {
+            if (this.serverState.lobbies[this.lobbyCode].accounts.findIndex(
+                lobbyAcc => lobbyAcc.userID === acc.accID
+            ) !== -1) return
+
+            this.levels.splice(acc.index, 1)
+        })
         if (this.levels.includes(DUMMY_LEVEL_DATA)) return
         this.currentlySwapping = false
 

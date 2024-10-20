@@ -8,7 +8,7 @@
 	},
 	"id": "techstudent10.creation_rotation",
 	"name": "Creation Rotation",
-	"version": "v1.0.0-beta.1",
+	"version": "v1.0.0-beta.2",
 	"developer": "TechStudent10",
 	"description": "Wulzy's Creation Rotation as a mod",
 	"resources": {
@@ -49,6 +49,12 @@
 			"type": "bool",
 			"default": false,
 			"description": "Hides the lobby code on the lobby screen and the join popup"
+		},
+		"delete-lvls": {
+			"name": "Delete Levels when done",
+			"type": "bool",
+			"default": true,
+			"description": "Delete levels when you're done with them. This does not include the last turn when you recieve your level back. Useful if you wanna keep the older versions of levels."
 		}
 	},
 	"links": {
@@ -58,5 +64,10 @@
 	"issues": {
 		"info": "Report issues to the GH page",
 		"url": "https://github.com/TechStudent10/CreationRotation/issues"
-	}
+	},
+	"tags": [
+		"editor",
+		"enhancement",
+		"online"
+	]
 }

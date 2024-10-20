@@ -79,16 +79,16 @@ export function disconnectFromLobby(data: SocketData, state: ServerState) {
             if (isDeletingLobby) {
                 state.swaps[lobbyCode].unscheduleNextSwap()
                 delete state.swaps[lobbyCode]
-            } else {
-                const accIdx = state.swaps[lobbyCode].accountIndexes.findIndex((acc) => acc.accID == data.account?.userID)
-                const swapIdx = state.swaps[lobbyCode].swapOrder.indexOf(
-                    state.swaps[lobbyCode].accountIndexes[accIdx].index
-                )
-                state.swaps[lobbyCode].swapOrder.splice(swapIdx, 1)
+            } else {}
+            //     const accIdx = state.swaps[lobbyCode].accountIndexes.findIndex((acc) => acc.accID == data.account?.userID)
+            //     const swapIdx = state.swaps[lobbyCode].swapOrder.indexOf(
+            //         state.swaps[lobbyCode].accountIndexes[accIdx].index
+            //     )
+            //     state.swaps[lobbyCode].swapOrder.splice(swapIdx, 1)
                 
                 if (state.swaps[lobbyCode].levels.length !== 0) {
-                    state.swaps[lobbyCode].levels.splice(swapIdx, 1)
-                }
+            //         state.swaps[lobbyCode].levels.splice(swapIdx, 1)
+            //     }
 
                 state.swaps[lobbyCode].checkSwap()
             }

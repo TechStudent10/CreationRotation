@@ -12,6 +12,23 @@
 
 using namespace geode::prelude;
 
+// ok so this is really weird but
+// if you're on wine or something, the CertStore which im assuming contains certificates and whatnot
+// can simply just not exist, and ixwebsocket needs it to. this code will create it if it doesnt exist
+// credits to dankmeme01 for the fix (i literally just copy/pasted it from his message)
+#ifdef GEODE_IS_WINDOWS
+#include <Windows.h>
+#include <wincrypt.h>
+
+$on_mod(Loaded) {
+	DWORD flags = CERT_STORE_READONLY_FLAG | CERT_SYSTEM_STORE_CURRENT_USER;
+	HCERTSTORE store = CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0, flags, L"Root");
+	if (store) {
+		CertCloseStore(store, flags);
+	}
+};
+#endif
+
 class $modify(CRBrowserLayer, LevelBrowserLayer) {
 	bool init(GJSearchObject* searchObject) {
 		if (!LevelBrowserLayer::init(searchObject)) {
@@ -29,13 +46,21 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 			menu_selector(CRBrowserLayer::onMyButton)
 		);
 		myButton->setZOrder(2);
-
-		auto menu = this->getChildByID("my-levels-menu");
-		menu->addChild(myButton);
-
 		myButton->setID("rotation-start"_spr);
 
-		menu->updateLayout();
+		auto menu = this->getChildByID("my-levels-menu");
+		if (menu) {
+			menu->addChild(myButton);
+			menu->updateLayout();
+		} else {
+			auto menu = CCMenu::create();
+			menu->addChild(myButton);
+			menu->setID("cr-menu"_spr);
+			menu->setPosition({
+				30.75, 69.5
+			});
+			this->addChild(menu);
+		}
 
 		return true;
 	}

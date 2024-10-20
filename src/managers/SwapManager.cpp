@@ -173,8 +173,10 @@ void SwapManager::registerListeners() {
 
         std::filesystem::remove(filePath);
 
-        // let's not spam everyone's created levels list
-        GameLevelManager::sharedState()->deleteLevel(lvl);
+        if (lvl && Mod::get()->getSettingValue<bool>("delete-lvls")) {
+            // let's not spam everyone's created levels list
+            GameLevelManager::sharedState()->deleteLevel(lvl);
+        }
 
         nm.send(
             SendLevelPacket::create(

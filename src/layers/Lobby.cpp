@@ -175,6 +175,29 @@ bool LobbyLayer::init(std::string code) {
             ->setAxisReverse(true)
     );
 
+    auto discordSpr = CCSprite::createWithSpriteFrameName("gj_discordIcon_001.png");
+    discordSpr->setScale(1.25f);
+    auto discordBtn = CCMenuItemExt::createSpriteExtra(
+        discordSpr,
+        [this](CCObject* target) {
+            geode::createQuickPopup(
+                "Discord Server",
+                "We have a <cb>Discord Server</c>! If you have questions, want to suggest a feature, or find someone to swap with, join here! \n<cl>Please not that you need to be at least 13 years of age to join our server.</c>",
+                "Cancel", "Join!",
+                [this](auto, bool btn2) {
+                    if (!btn2) return;
+                    CCApplication::get()->openURL(
+                        Mod::get()->getMetadata().getLinks().getCommunityURL()->c_str()
+                    );
+                }
+            );
+        }
+    );
+    auto discordMenu = CCMenu::create();
+    discordMenu->setPosition({ 25.f, 25.f });
+    discordMenu->addChild(discordBtn);
+    mainLayer->addChild(discordMenu);
+
     this->setKeyboardEnabled(true);
     this->setKeypadEnabled(true);
     this->addChild(mainLayer);
@@ -307,8 +330,16 @@ void LobbyLayer::refresh(LobbyInfo info) {
 void LobbyLayer::onStart(CCObject* sender) {
     if (!isOwner) return;
 
-    auto& nm = NetworkManager::get();
-    nm.send(StartSwapPacket::create(lobbyCode));
+    geode::createQuickPopup(
+        "Start Swap?",
+        "Are you sure you want to start the Creation Rotation <cy>now?</c>",
+        "No", "Let's go!",
+        [this](auto, bool btn2) {
+            if (!btn2) return;
+            auto& nm = NetworkManager::get();
+            nm.send(StartSwapPacket::create(lobbyCode));
+        }
+    );
 }
 
 void LobbyLayer::onSettings(CCObject* sender) {
