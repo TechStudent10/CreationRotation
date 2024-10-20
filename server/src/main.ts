@@ -14,7 +14,8 @@ const app = express()
 const httpServer = createServer(app)
 const wss = new WebSocket.Server({ server: httpServer })
 
-let socketCount: number = 0;
+let socketCount: number = 0
+let peakSocketCount: number = 0
 
 let handlers: Handlers = {}
 let state: ServerState = {
@@ -40,6 +41,9 @@ handlerFiles.forEach(async (handlerName) => {
 wss.on("connection", (socket) => {
     let data: SocketData = {}
     socketCount++
+    if (socketCount > peakSocketCount) {
+        peakSocketCount = socketCount
+    }
 
     log.info(`new connection! ${socket.url}`)
 
@@ -120,6 +124,8 @@ app.get("/stats", (req, res) => {
             Lobbies subtract swaps (inactive swaps): <b>${getLength(state.lobbies) - getLength(state.swaps)}</b>
             <br>
             Number of connected clients: <b>${socketCount}</b>
+            <br>
+            Peak number of connected clients: <b>${peakSocketCount}</b>
         </p>
     `)
 })
