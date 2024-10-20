@@ -14,6 +14,8 @@ const app = express()
 const httpServer = createServer(app)
 const wss = new WebSocket.Server({ server: httpServer })
 
+let socketCount: number = 0;
+
 let handlers: Handlers = {}
 let state: ServerState = {
     lobbies: {},
@@ -26,10 +28,10 @@ const handlerFiles = ["lobby", "swap"]
 
 handlerFiles.forEach(async (handlerName) => {
     try {
-    const importedHandlers =
-        (await import(`./handlers/${handlerName}`)).default as Handlers | undefined
-    
-    handlers = {...handlers, ...importedHandlers}
+        const importedHandlers =
+            (await import(`./handlers/${handlerName}`)).default as Handlers | undefined
+        
+        handlers = {...handlers, ...importedHandlers}
     } catch {
         log.error(`unable to add handlers for file "${handlerName}". did you remember to use \`export default\`?`)
     }
@@ -37,6 +39,7 @@ handlerFiles.forEach(async (handlerName) => {
 
 wss.on("connection", (socket) => {
     let data: SocketData = {}
+    socketCount++
 
     log.info(`new connection! ${socket.url}`)
 
@@ -95,6 +98,7 @@ wss.on("connection", (socket) => {
     })
 
     socket.on("close", (code, reason) => {
+        socketCount--
         disconnectFromLobby(data, state)
     })
 
@@ -115,7 +119,7 @@ app.get("/stats", (req, res) => {
             <br>
             Lobbies subtract swaps (inactive swaps): <b>${getLength(state.lobbies) - getLength(state.swaps)}</b>
             <br>
-            Number of connected clients: <b>${getLength(state.sockets)}</b>
+            Number of connected clients: <b>${socketCount}</b>
         </p>
     `)
 })
