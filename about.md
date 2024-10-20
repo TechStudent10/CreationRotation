@@ -20,3 +20,6 @@ Inspired by [Wulzy](https://youtube.com/@wulzy)'s Level Swap series, this mod al
 - Swishbue
 - dankmeme01
 - Prevter
+- nnexterr
+- LimeGradient
+- Terma
