@@ -80,8 +80,8 @@ class $modify(CREditorUI, EditorUI) {
 	bool init(LevelEditorLayer* editorLayer) {
 		if (!EditorUI::init(editorLayer)) return false;
 
-		auto& nm = NetworkManager::get();
-		if (!nm.isConnected) return true;
+		auto& sm = SwapManager::get();
+		if (sm.currentLobbyCode == "") return true;
 
 		m_fields->timerLabel = CCLabelBMFont::create(
 			"00:00",

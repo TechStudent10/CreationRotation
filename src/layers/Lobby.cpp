@@ -474,7 +474,7 @@ void LobbyLayer::onClose(CCObject* sender) {
 void LobbyLayer::keyBackClicked() {
     geode::createQuickPopup(
         "Disconnect",
-        "Are you want to <cr>disconnect</c> from the <cy>lobby</c> and <cy>server</c>?",
+        "Are you sure you want to <cr>disconnect</c> from the <cy>lobby</c> and <cy>server</c>?",
         "Cancel", "Yes",
         [this](auto, bool btn2) {
             if (!btn2) return;

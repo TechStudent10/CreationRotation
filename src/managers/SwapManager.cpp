@@ -107,6 +107,7 @@ void SwapManager::disconnectLobby() {
     CR_REQUIRE_CONNECTION()
 
     auto& nm = NetworkManager::get();
+    this->currentLobbyCode = "";
 
     // no longer needed
     // nm.send(DisconnectFromLobbyPacket::create());
@@ -217,7 +218,7 @@ void SwapManager::registerListeners() {
         log::debug("swap ended; disconnecting from server");
         auto& nm = NetworkManager::get();
         nm.showDisconnectPopup = false;
-        nm.disconnect();
+        this->disconnectLobby();
         FLAlertLayer::create(
             "Creation Rotation",
             "The Creation Rotation level swap has <cy>ended!</c>\nHope you had fun! :D\n\n<cl>You have been disconnected from the Creation Rotation server.</c>",
