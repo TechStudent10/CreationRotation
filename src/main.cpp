@@ -117,6 +117,10 @@ class $modify(CREditorUI, EditorUI) {
 
 		auto& sm = SwapManager::get();
 
+		if (sm.getTimeRemaining() <= 0) {
+			return;
+		}
+
 		auto timeDur = std::chrono::duration<int>(sm.getTimeRemaining());
 		auto timeString = fmt::format("{:%M:%S}", timeDur);
 
