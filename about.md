@@ -2,7 +2,7 @@
 
 Inspired by [Wulzy](https://youtube.com/@wulzy)'s Level Swap series, this mod allows you to play Level Swap with as many people as you want!
 
-**Please report bugs to the Discord Server or the GitHUb issues page. This mod is still in beta and needs a lot more work until stable.**
+**Please report bugs to the Discord Server or the GitHub issues page. This mod is still in beta and needs a lot more work until stable.**
 
 ### Credits
 
