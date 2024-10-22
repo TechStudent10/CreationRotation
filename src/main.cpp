@@ -1,12 +1,16 @@
 #include <Geode/Geode.hpp>
 
 #include <Geode/modify/LevelBrowserLayer.hpp>
+#include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
 
+#include <layers/Lobby.hpp>
 #include <layers/LobbySelectPopup.hpp>
 
 #include <network/manager.hpp>
 #include <managers/SwapManager.hpp>
+
+#include <utils.hpp>
 
 #include <fmt/chrono.h>
 
@@ -66,9 +70,17 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 	}
 
 	void onMyButton(CCObject*) {
-		auto& nm = NetworkManager::get();
-		nm.connect(true);
-		LobbySelectPopup::create()->show();
+		auto& sm = SwapManager::get();
+		if (sm.currentLobbyCode == "") {
+			auto& nm = NetworkManager::get();
+			nm.connect(true);
+			LobbySelectPopup::create()->show();
+		} else {
+			auto layer = LobbyLayer::create(sm.currentLobbyCode);
+			auto scene = CCScene::create();
+			scene->addChild(layer);
+			cr::utils::goToScene(scene);
+		}
 	}
 };
 
@@ -125,5 +137,33 @@ class $modify(CREditorUI, EditorUI) {
 		auto timeString = fmt::format("{:%M:%S}", timeDur);
 
 		m_fields->timerLabel->setString(timeString.c_str());
+	}
+};
+
+class $modify(CRLvlInfoLayer, LevelInfoLayer) {
+	struct Fields {
+		bool forceStartPlay = false;
+	};
+
+	void onPlay(CCObject* sender) {
+		auto& sm = SwapManager::get();
+		if (sm.currentLobbyCode == "" || m_fields->forceStartPlay) {
+			LevelInfoLayer::onPlay(sender);
+			return;
+		}
+
+		geode::createQuickPopup(
+			"Creation Rotation",
+			"You are currenly in a <cb>Creation Rotation</c> lobby. If you choose to play, note that you may be <cr>kicked out</c> of the game and into the level screen <cr>without saving</c> if the swap occurs. Are you sure you want to continue?",
+			"No", "Play",
+			[this, sender](auto, bool btn2) {
+				if (!btn2) {
+					return;
+				}
+
+				m_fields->forceStartPlay = true;
+				this->onPlay(sender);
+			}
+		);
 	}
 };

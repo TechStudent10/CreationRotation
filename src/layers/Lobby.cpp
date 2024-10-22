@@ -124,12 +124,27 @@ bool LobbyLayer::init(std::string code) {
     mainLayer->addChild(background);
 
     auto closeBtnSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
-    closeBtn = CCMenuItemSpriteExtra::create(
-        closeBtnSprite, this, menu_selector(LobbyLayer::onClose)
+    closeBtn = CCMenuItemExt::createSpriteExtra(
+        closeBtnSprite, [this](CCObject* target) {
+            keyBackClicked();
+        }
+    );
+
+    auto disconnectBtnSprite = CCSprite::create("disconnect-btn.png"_spr);
+    disconnectBtnSprite->setScale(0.2f);
+    auto disconnectBtn = CCMenuItemExt::createSpriteExtra(
+        disconnectBtnSprite,
+        [this](CCObject* target) {
+            onDisconnect(target);
+        }
     );
     auto closeMenu = CCMenu::create();
     closeMenu->addChild(closeBtn);
-    closeMenu->setPosition({ 25, size.height - 25 });
+    closeMenu->addChild(disconnectBtn);
+    closeMenu->setLayout(
+        RowLayout::create()
+    );
+    closeMenu->setPosition({ 45, size.height - 25 });
     mainLayer->addChild(closeMenu);
 
     geode::addSideArt(mainLayer, SideArt::Bottom);
@@ -219,6 +234,7 @@ void LobbyLayer::registerListeners() {
     nm.on<SwapStartedPacket>([this](SwapStartedPacket* packet) {
         auto& sm = SwapManager::get();
         sm.startSwap(packet);
+        NetworkManager::get().unbind<SwapStartedPacket>();
     });
     nm.showDisconnectPopup = true;
     nm.setDisconnectCallback([this](std::string reason) {
@@ -234,7 +250,6 @@ void LobbyLayer::registerListeners() {
 void LobbyLayer::unregisterListeners() {
     auto& nm = NetworkManager::get();
     nm.unbind<LobbyUpdatedPacket>();
-    nm.unbind<SwapStartedPacket>();
 }
 
 LobbyLayer::~LobbyLayer() {
@@ -257,7 +272,7 @@ void LobbyLayer::refresh(LobbyInfo info) {
             info.settings.name.c_str(),
             "bigFont.fnt"
         );
-        titleLabel->limitLabelWidth(300.f, 1.f, 0.1f);
+        titleLabel->limitLabelWidth(275.f, 1.f, 0.1f);
 
         auto menu = CCMenu::create();
         menu->setPosition({
@@ -467,11 +482,7 @@ void LobbyLayer::createBorders() {
     playerList->addChild(bottomRightCorner);
 }
 
-void LobbyLayer::onClose(CCObject* sender) {
-    keyBackClicked();
-}
-
-void LobbyLayer::keyBackClicked() {
+void LobbyLayer::onDisconnect(CCObject* sender) {
     geode::createQuickPopup(
         "Disconnect",
         "Are you sure you want to <cr>disconnect</c> from the <cy>lobby</c> and <cy>server</c>?",
@@ -484,6 +495,19 @@ void LobbyLayer::keyBackClicked() {
 
             auto& lm = SwapManager::get();
             lm.disconnectLobby();
+
+            cr::utils::popScene();
+        }
+    );
+}
+
+void LobbyLayer::keyBackClicked() {
+    geode::createQuickPopup(
+        "Leave Layer?",
+        "Are you sure you want to <cy>leave the layer?</c> This will not disconnect you and will allow you to do other things ingame. You will be booted to the level page when the swap begins.",
+        "No", "Yes",
+        [this](auto, bool btn2) {
+            if (!btn2) return;
 
             cr::utils::popScene();
         }

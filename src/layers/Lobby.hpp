@@ -44,7 +44,7 @@ protected:
     void registerListeners();
     void unregisterListeners();
 
-    void onClose(CCObject*);
+    void onDisconnect(CCObject*);
     void onStart(CCObject*);
     void onSettings(CCObject*);
 
