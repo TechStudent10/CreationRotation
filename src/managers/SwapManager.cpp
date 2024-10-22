@@ -13,7 +13,7 @@ using namespace geode::prelude;
 #define CR_REQUIRE_CONNECTION() if(!NetworkManager::get().isConnected) NetworkManager::get().connect();
 
 SwapManager::SwapManager() {
-    CR_REQUIRE_CONNECTION()
+    // CR_REQUIRE_CONNECTION()
     auto& nm = NetworkManager::get();
     nm.on<ErrorPacket>([](ErrorPacket* packet) {
         FLAlertLayer::create(
