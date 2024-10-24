@@ -1,3 +1,12 @@
+# 1.0.0-beta.3
+
+**New Features**
+- You can now leave the swap screen without disconnecting!
+
+**Bugfixes**
+- Fixed the timer showing up after a swap has completed
+- Fixed the mod attempting to connect to the server whenever you open the editor
+
 # 1.0.0-beta.2
 
 **New Features**
