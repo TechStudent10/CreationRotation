@@ -11,3 +11,18 @@ void cr::utils::replaceScene(CCScene *scene) {
 void cr::utils::popScene() {
     CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
 }
+
+Account cr::utils::createAccountType() {
+    auto gm = GameManager::get();
+
+    return {
+        .name = gm->m_playerName,
+        .userID = gm->m_playerUserID.value(),
+        .iconID = gm->getPlayerFrame(),
+        .color1 = gm->m_playerColor.value(),
+        .color2 = gm->m_playerColor2.value(),
+        .color3 = gm->m_playerGlow ?
+            gm->m_playerGlowColor.value() :
+            -1
+    };
+}

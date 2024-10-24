@@ -1,5 +1,9 @@
 #include "manager.hpp"
 
+#include <utils.hpp>
+#include "packets/client.hpp"
+#include "packets/server.hpp"
+
 NetworkManager::NetworkManager() {
     ix::initNetSystem();
 }
@@ -41,11 +45,21 @@ void NetworkManager::connect(bool shouldReconnect) {
             return;
         } else if (msg->type == ix::WebSocketMessageType::Open) {
             log::debug("connection success!");
+
             // send login data
-            auto loginInfo = matjson::Object({
-                {"version", Mod::get()->getVersion().toVString()}
+            this->send(
+                LoginPacket::create()
+            );
+
+            // register error packet
+            this->on<ErrorPacket>([](ErrorPacket* packet) {
+                FLAlertLayer::create(
+                    "CR Error",
+                    fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet->error).c_str(),
+                    "OK"
+                )->show();
             });
-            socket.send(fmt::format("login|{}", matjson::Value(loginInfo).dump(0)));
+
             this->showDisconnectPopup = true;
             Loader::get()->queueInMainThread([]() {
                 Notification::create(

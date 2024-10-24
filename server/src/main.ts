@@ -9,6 +9,7 @@ import { disconnectFromLobby, getLength, sendError } from "./utils"
 
 import pako from "pako"
 import log from "./logging"
+import { DBState } from "./db/db"
 
 const app = express()
 const httpServer = createServer(app)
@@ -18,11 +19,15 @@ let socketCount: number = 0
 let peakSocketCount: number = 0
 
 let handlers: Handlers = {}
+
+const dbState = new DBState()
+
 let state: ServerState = {
     lobbies: {},
     kickedUsers: {},
     sockets: {},
-    swaps: {}
+    swaps: {},
+    dbState
 }
 
 const handlerFiles = ["lobby", "swap"]
@@ -40,12 +45,6 @@ handlerFiles.forEach(async (handlerName) => {
 
 wss.on("connection", (socket) => {
     let data: SocketData = {}
-    socketCount++
-    if (socketCount > peakSocketCount) {
-        peakSocketCount = socketCount
-    }
-
-    log.info(`new connection! ${socket.url}`)
 
     socket.on("message", (sdata) => {
         if (sdata.toString().startsWith("login")) {
@@ -63,14 +62,6 @@ wss.on("connection", (socket) => {
             return
         }
 
-        if (!data.loggedIn) {
-            socket.close(
-                1000,
-                "did not recieve login data; cannot proceed"
-            )
-            return
-        }
-
         let inflatedData: string;
         try {
             inflatedData = pako.inflate(sdata as Buffer, { to: "string" }).toString()
@@ -80,6 +71,7 @@ wss.on("connection", (socket) => {
             sendError(socket, errorStr)
             return
         }
+
         const args = JSON.parse(inflatedData.toString())
         if (!args || typeof args !== "object") {
             log.packet("recieved invalid packet string")
@@ -87,8 +79,39 @@ wss.on("connection", (socket) => {
         }   
         const packetId = args["packet_id"]
 
+        // handle the login packet first, it's special
+        if (packetId === 5001) {
+            const { packet: packetArgs } = args as { packet: LoginInfo }
+            
+            let modVersion = packetArgs.version.replace("v", "")
+            if (modVersion !== version) {
+                socket.close(1000, `version mismatch: mod version <cy>${modVersion}</c> does not equal server version <cy>${version}</c>`)
+                return
+            }
+
+            socketCount++
+            if (socketCount > peakSocketCount) {
+                peakSocketCount = socketCount
+            }
+            
+            data.account = packetArgs.account
+            data.loggedIn = true
+
+            log.info(`new connection! ${data.account.name} (ID: ${data.account.userID}, connection #${socketCount})`)
+
+            return
+        }
+
         if (!Object.keys(handlers).includes(String(packetId))) {
             log.packet(`unhandled packet ${packetId}`)
+            return
+        }
+
+        if (!data.loggedIn) {
+            socket.close(
+                1000,
+                "did not recieve login data; cannot proceed"
+            )
             return
         }
 
@@ -102,6 +125,7 @@ wss.on("connection", (socket) => {
     })
 
     socket.on("close", (code, reason) => {
+        if (!data.loggedIn) return
         socketCount--
         disconnectFromLobby(data, state)
     })

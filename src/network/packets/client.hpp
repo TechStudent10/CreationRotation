@@ -2,9 +2,24 @@
 #include "packet.hpp"
 
 #include <types/lobby.hpp>
+#include <Geode/loader/Mod.hpp>
+
+#include <utils.hpp>
+
+class LoginPacket : public Packet {
+    CR_PACKET(5001, LoginPacket)
+
+    std::string version = geode::Mod::get()->getVersion().toVString();
+    Account account = cr::utils::createAccountType();
+
+    CR_SERIALIZE(
+        CEREAL_NVP(version),
+        CEREAL_NVP(account)
+    )
+};
 
 // response: LobbyCreatedPacket
-class CreateLobbyPacket : public virtual Packet {
+class CreateLobbyPacket : public Packet {
     CR_PACKET(2001, CreateLobbyPacket)
 
     CreateLobbyPacket(LobbySettings settings):

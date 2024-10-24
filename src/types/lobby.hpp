@@ -11,12 +11,15 @@ struct LobbySettings {
     int owner;
     int minutesPerTurn;
 
+    bool isPublic;
+
     CR_SERIALIZE(
         CEREAL_NVP(name),
         // CEREAL_NVP(password),
         CEREAL_NVP(turns),
         CEREAL_NVP(owner),
-        CEREAL_NVP(minutesPerTurn)
+        CEREAL_NVP(minutesPerTurn),
+        CEREAL_NVP(isPublic)
     )
 };
 

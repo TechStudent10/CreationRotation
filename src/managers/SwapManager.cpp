@@ -10,22 +10,12 @@
 
 using namespace geode::prelude;
 
-#define CR_REQUIRE_CONNECTION() if(!NetworkManager::get().isConnected) NetworkManager::get().connect();
+#define CR_REQUIRE_CONNECTION() if(!NetworkManager::get().isConnected) return;
 
-SwapManager::SwapManager() {
-    // CR_REQUIRE_CONNECTION()
-    auto& nm = NetworkManager::get();
-    nm.on<ErrorPacket>([](ErrorPacket* packet) {
-        FLAlertLayer::create(
-            "CR Error",
-            fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet->error).c_str(),
-            "OK"
-        )->show();
-    });
-}
+SwapManager::SwapManager() {}
 
 LobbySettings SwapManager::createDefaultSettings() {
-    auto acc = SwapManager::createAccountType();
+    auto acc = cr::utils::createAccountType();
 
     return {
         .name = fmt::format("{}'s Lobby", acc.name),
@@ -52,27 +42,12 @@ void SwapManager::joinLobby(std::string code, std::function<void()> callback) {
 
     auto& nm = NetworkManager::get();
 
-    nm.send(JoinLobbyPacket::create(code, this->createAccountType()));
+    nm.send(JoinLobbyPacket::create(code, cr::utils::createAccountType()));
 
     nm.on<JoinedLobbyPacket>([this, callback, code](auto) {
         this->currentLobbyCode = code;
         callback();
     }, true);
-}
-
-Account SwapManager::createAccountType() {
-    auto gm = GameManager::get();
-
-    return {
-        .name = gm->m_playerName,
-        .userID = gm->m_playerUserID.value(),
-        .iconID = gm->getPlayerFrame(),
-        .color1 = gm->m_playerColor.value(),
-        .color2 = gm->m_playerColor2.value(),
-        .color3 = gm->m_playerGlow ?
-            gm->m_playerGlowColor.value() :
-            -1
-    };
 }
 
 void SwapManager::getLobbyAccounts(std::function<void(std::vector<Account>)> callback) {
@@ -122,7 +97,7 @@ void SwapManager::startSwap(SwapStartedPacket* packet) {
     });
 
     for (auto acc : packet->accounts) {
-        if (acc.accID != SwapManager::createAccountType().userID) continue;
+        if (acc.accID != cr::utils::createAccountType().userID) continue;
 
         swapIdx = acc.index;
 

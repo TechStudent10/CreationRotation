@@ -33,7 +33,7 @@ public:
     template<typename T>
     requires std::is_base_of_v<Packet, T>
     inline void on(std::function<void(T*)> callback, bool shouldUnbind = false) {
-        if (!this->isConnected) this->connect();
+        if (!this->isConnected) return;
 
         listeners[T::PACKET_ID] = [callback](std::string msg) {
             std::stringstream ss;
@@ -56,7 +56,7 @@ public:
     template<typename T>
     requires std::is_base_of_v<Packet, T>
     inline void unbind() {
-        if (!this->isConnected) this->connect();
+        if (!this->isConnected) return;
 
         if (!listeners.contains(T::PACKET_ID)) {
             log::error("unable to remove listener for {} ({}), listener does not exist", T::PACKET_NAME, T::PACKET_ID);

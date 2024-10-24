@@ -1,3 +1,4 @@
+import { DBState } from "@/db/db"
 import { Account } from "./account"
 import { Lobby } from "./lobby"
 import { Swap } from "./swap"
@@ -14,8 +15,10 @@ export type ServerState = {
     swaps : { [code: string]: Swap }
     kickedUsers : { [code: string]: number[] }
     sockets : { [code: string]: { [userID: number]: WebSocket } }
+    dbState: DBState
 }
 
 export type LoginInfo = {
     version: string
+    account: Account
 }

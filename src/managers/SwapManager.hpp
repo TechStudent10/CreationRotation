@@ -22,7 +22,6 @@ public:
     void getLobbyAccounts(std::function<void(std::vector<Account>)>);
     void getLobbyInfo(std::function<void(LobbyInfo)>);
 
-    static Account createAccountType();
     static LobbySettings createDefaultSettings();
 
     // LEVEL SWAP //
