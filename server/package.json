@@ -6,6 +6,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "pako": "^2.1.0",
     "ws": "^8.18.0"
