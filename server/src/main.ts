@@ -1,3 +1,6 @@
+import dotenv from "dotenv"
+dotenv.config()
+
 import WebSocket from "ws"
 import { createServer } from "http"
 import { default as express } from "express"
@@ -10,6 +13,7 @@ import { disconnectFromLobby, getLength, sendError } from "./utils"
 import pako from "pako"
 import log from "./logging"
 import { DBState } from "./db/db"
+import { ErrorHandler } from "./error_handler"
 
 const app = express()
 const httpServer = createServer(app)
@@ -44,7 +48,13 @@ handlerFiles.forEach(async (handlerName) => {
 })
 
 wss.on("connection", (socket) => {
-    let data: SocketData = {}
+    let data: SocketData = {};
+
+    let thing: any = ""
+    if (typeof thing == "string") {
+        thing = undefined
+    }
+    thing.replace("a", "")
 
     socket.on("message", (sdata) => {
         if (sdata.toString().startsWith("login")) {
@@ -155,6 +165,9 @@ app.get("/stats", (req, res) => {
 })
 
 const port = process.env.PORT || 3000
+
+const errHandler = new ErrorHandler(process.env.WEBHOOK_URL || "")
+errHandler.registerListeners()
 
 log.info(`listening on port ${port}`)
 httpServer.listen(port)

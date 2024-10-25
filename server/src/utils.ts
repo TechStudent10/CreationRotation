@@ -34,7 +34,8 @@ export function sendError(socket: WebSocket, error: string) {
 
 
 export function emitToLobby(state: ServerState, lobbyCode: string, packetId: Packet, args: object) {
-    Object.values(state.sockets[lobbyCode])?.forEach((socket) => {
+    if (!state.sockets[lobbyCode]) return
+    Object.values(state.sockets[lobbyCode]).forEach((socket) => {
         sendPacket(socket, packetId, args)
     })
 }
