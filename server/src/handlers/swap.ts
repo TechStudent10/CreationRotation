@@ -13,7 +13,7 @@ const swapHandlers: Handlers = {
         if (!lobbyCode || !account) return
 
         if (!Object.keys(state.lobbies).includes(lobbyCode)) return
-        if (state.lobbies[lobbyCode].settings.owner != account.userID) {
+        if (state.lobbies[lobbyCode].settings.owner.userID != account.userID) {
             sendError(socket, "you are not the owner of this lobby")
             return
         }

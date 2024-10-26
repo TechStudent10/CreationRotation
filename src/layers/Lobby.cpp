@@ -219,7 +219,7 @@ bool LobbyLayer::init(std::string code) {
     this->addChild(bottomMenu);
 
     SwapManager::get().getLobbyInfo([this](LobbyInfo info) {
-        refresh(info); 
+        refresh(info, true); 
     });
     registerListeners();
 
@@ -256,8 +256,8 @@ LobbyLayer::~LobbyLayer() {
     unregisterListeners();
 }
 
-void LobbyLayer::refresh(LobbyInfo info) {
-    isOwner = GameManager::get()->m_playerUserID == info.settings.owner;
+void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
+    isOwner = GameManager::get()->m_playerUserID == info.settings.owner.userID;
 
     loadingCircle = LoadingCircle::create();
     loadingCircle->setParentLayer(this);
@@ -267,7 +267,7 @@ void LobbyLayer::refresh(LobbyInfo info) {
     auto size = CCDirector::sharedDirector()->getWinSize();
     auto listWidth = size.width / 1.5f;
 
-    if (!titleLabel) {
+    if (isFirstRefresh) {
         titleLabel = CCLabelBMFont::create(
             info.settings.name.c_str(),
             "bigFont.fnt"
@@ -294,7 +294,7 @@ void LobbyLayer::refresh(LobbyInfo info) {
         mainLayer->addChild(menu);
     }
 
-    titleLabel->setString(
+    if (titleLabel) titleLabel->setString(
         fmt::format("{} ({})",
             info.settings.name,
             Mod::get()->getSettingValue<bool>("hide-code") ? "......" : info.code

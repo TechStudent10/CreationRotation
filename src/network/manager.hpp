@@ -21,8 +21,18 @@ public:
     }
 
     void setDisconnectCallback(DisconnectCallback callback) {
-        disconnectCallback = callback;
+        disconnectBtnCallback = callback;
     }
+
+    void onDisconnect(DisconnectCallback callback) {
+        disconnectEventCb = callback;
+    }
+
+    template<typename T>
+    inline void addToQueue(T* packet) {
+        this->packetQueue.push_back([this, packet]() { this->send(packet); });
+    }
+
     bool showDisconnectPopup = true;
 
     bool isConnected = false;
@@ -33,8 +43,6 @@ public:
     template<typename T>
     requires std::is_base_of_v<Packet, T>
     inline void on(std::function<void(T*)> callback, bool shouldUnbind = false) {
-        if (!this->isConnected) return;
-
         listeners[T::PACKET_ID] = [callback](std::string msg) {
             std::stringstream ss;
             ss << msg;
@@ -68,9 +76,11 @@ public:
         log::debug("removed listener for {} ({})", T::PACKET_NAME, T::PACKET_ID);
     }
 
-    template<typename _Packet>
-    inline void send(_Packet* packet) {
-        if (!this->isConnected) this->connect();
+    template<typename T>
+    inline void send(T* packet) {
+        if (!this->isConnected) {
+            return;
+        }
 
         log::debug("sending packet {} ({})", packet->getPacketName(), packet->getPacketID());
         std::stringstream ss;
@@ -104,10 +114,15 @@ protected:
 
     void onMessage(const ix::WebSocketMessagePtr& msg);
 
-    DisconnectCallback disconnectCallback;
+    DisconnectCallback disconnectBtnCallback;
+    DisconnectCallback disconnectEventCb;
 
     std::unordered_map<
         int,
         std::function<void(std::string)>
     > listeners;
+
+    std::vector<
+        std::function<void()>
+    > packetQueue;
 };

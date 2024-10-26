@@ -9,7 +9,7 @@ export type Lobby = {
 export type LobbySettings = {
     name: string
     turns: number
-    owner: number // owner user ID
+    owner: Account // owner user account
     // password?: string
     minutesPerTurn: number
     isPublic: boolean // this will be a nightmare to add

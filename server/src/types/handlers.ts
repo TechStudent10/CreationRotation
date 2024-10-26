@@ -41,6 +41,8 @@ export type Handlers = {
     2007?: (socket: WebSocket, args: {}, data: SocketData, state: ServerState) => void
     // KickUserPacket
     2008?: (socket: WebSocket, args: { userID: number }, data: SocketData, state: ServerState) => void
+    // GetPublicLobbiesPacket (response: RecievePublicLobbiesPacket)
+    2009?: (socket: WebSocket, args: {}, data: SocketData, state: ServerState) => void
     // SendLevelPacket
     3001?: (socket: WebSocket, args: {
         code: string

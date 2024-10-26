@@ -29,7 +29,12 @@ const lobbyHandlers: Handlers = {
         )
     },
     2002: (socket, args, data, state) => { // JoinLobbyPacket
-        const {code, account} = args
+        const { code } = args
+        const { account } = data
+        if (!account) {
+            log.error("not logged in!")
+            return
+        }
         if (!Object.keys(state.lobbies).includes(code)) {
             sendError(socket, `lobby with code '${code}' does not exist` )
             return
@@ -46,7 +51,6 @@ const lobbyHandlers: Handlers = {
         state.sockets[code][account.userID] = socket
         log.info(`user ${account.name} has joined lobby ${state.lobbies[code].settings.name}`)
         data.currentLobbyCode = code
-        data.account = args.account
 
         sendPacket(socket, Packet.JoinedLobbyPacket, {})
 
@@ -82,7 +86,7 @@ const lobbyHandlers: Handlers = {
             return
         }
 
-        if (state.lobbies[code].settings.owner !== data.account?.userID) {
+        if (state.lobbies[code].settings.owner.userID !== data.account?.userID) {
             sendError(socket, "you are not the owner of this lobby")
             return
         }
@@ -107,7 +111,7 @@ const lobbyHandlers: Handlers = {
             sendError(socket, "invalid lobby code recieved")
             return
         }
-        if (state.lobbies[lobbyCode].settings.owner != account.userID) {
+        if (state.lobbies[lobbyCode].settings.owner.userID != account.userID) {
             sendError(socket, "you are not the owner of this lobby")
             return
         }
@@ -119,6 +123,15 @@ const lobbyHandlers: Handlers = {
         state.sockets[lobbyCode][userID].close(1000, "kicked from lobby by owner; you can no longer rejoin")
         state.kickedUsers[lobbyCode].push(userID)
     },
+    2009: (socket, _, __, state) => { // GetPublicLobbiesPacket (response: RecievePublicLobbiesPacket)
+        sendPacket(
+            socket,
+            Packet.RecievePublicLobbiesPacket,
+            { lobbies: Object.values(state.lobbies)
+                .filter((lobby) => lobby.settings.isPublic)
+                .sort((a, b) => b.accounts.length - a.accounts.length) }
+        )
+    }
 }
 
 export default lobbyHandlers

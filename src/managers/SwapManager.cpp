@@ -12,7 +12,12 @@ using namespace geode::prelude;
 
 #define CR_REQUIRE_CONNECTION() if(!NetworkManager::get().isConnected) return;
 
-SwapManager::SwapManager() {}
+SwapManager::SwapManager() {
+    auto& nm = NetworkManager::get();
+    nm.onDisconnect([this](std::string) {
+        this->currentLobbyCode = "";
+    });
+}
 
 LobbySettings SwapManager::createDefaultSettings() {
     auto acc = cr::utils::createAccountType();
@@ -20,8 +25,9 @@ LobbySettings SwapManager::createDefaultSettings() {
     return {
         .name = fmt::format("{}'s Lobby", acc.name),
         .turns = 4,
-        .owner = acc.userID,
-        .minutesPerTurn = 5
+        .minutesPerTurn = 5,
+        .owner = acc,
+        .isPublic = false
     };
 }
 

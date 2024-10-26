@@ -63,7 +63,7 @@ export function disconnectFromLobby(data: SocketData, state: ServerState) {
         const index = state.lobbies[lobbyCode].accounts.map(e => e.userID).indexOf(account.userID)
         state.lobbies[lobbyCode].accounts.splice(index, 1)
 
-        if (data.account?.userID === state.lobbies[lobbyCode].settings.owner) {
+        if (data.account?.userID === state.lobbies[lobbyCode].settings.owner.userID) {
             Object.values(state.sockets[lobbyCode]).forEach((socket) => {
                 socket.close(1000, "owner left, lobby closed")
             })

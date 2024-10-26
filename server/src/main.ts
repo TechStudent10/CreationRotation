@@ -50,12 +50,6 @@ handlerFiles.forEach(async (handlerName) => {
 wss.on("connection", (socket) => {
     let data: SocketData = {};
 
-    let thing: any = ""
-    if (typeof thing == "string") {
-        thing = undefined
-    }
-    thing.replace("a", "")
-
     socket.on("message", (sdata) => {
         if (sdata.toString().startsWith("login")) {
             const loginJson = JSON.parse(sdata.toString().split("|", 2)[1]) as LoginInfo

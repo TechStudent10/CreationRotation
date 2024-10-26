@@ -60,6 +60,13 @@ void NetworkManager::connect(bool shouldReconnect) {
                 )->show();
             });
 
+            // send all packets in queue
+            for (auto packetFn : packetQueue) {
+                packetFn();
+            }
+            // clear the queue
+            packetQueue.clear();
+
             this->showDisconnectPopup = true;
             Loader::get()->queueInMainThread([]() {
                 Notification::create(
@@ -79,13 +86,14 @@ void NetworkManager::connect(bool shouldReconnect) {
                     NotificationIcon::Error,
                     1.5f
                 )->show();
+                if (disconnectEventCb) disconnectEventCb(reason);
                 if (this->showDisconnectPopup) {
                     geode::createQuickPopup(
                         "Disconnected",
                         fmt::format("You have been disconnected from the Creation Rotation servers. Reason:\n\n{}", reason),
                         "OK", "Close",
                         [this, reason](auto, bool) {
-                            if (disconnectCallback) disconnectCallback(reason);
+                            if (disconnectBtnCallback) disconnectBtnCallback(reason);
                         }
                     );
                 }
@@ -96,9 +104,9 @@ void NetworkManager::connect(bool shouldReconnect) {
             this->onMessage(msg);
         }
     });
-
-    socket.start();
+    
     this->isConnected = true;
+    socket.start();
 }
 
 void NetworkManager::disconnect() {

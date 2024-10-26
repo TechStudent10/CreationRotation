@@ -4,7 +4,8 @@ enum LobbySettingType {
     Name,
     Turns,
     MinsPerTurn,
-    Password
+    Password,
+    IsPublic
 };
 
 class LobbySettingsCell : public CCNode {
@@ -45,23 +46,85 @@ protected:
         });
         this->addChild(menu);
 
-        input = TextInput::create(95.f, name);
-        input->setString(defaultStr);
-        if (filter != "") input->getInputNode()->setAllowedChars(filter);
-        input->setPosition({
-            width - input->getContentWidth() - 5.f, CELL_HEIGHT / 2.f
-        });
-        input->setAnchorPoint({
-            0.f, 0.5f
-        });
-        this->addChild(input);
+        switch (this->type) {
+            case Name: [[fallthrough]];
+            case Turns: [[fallthrough]];
+            case MinsPerTurn: [[fallthrough]];
+            case Password: {
+                input = TextInput::create(95.f, name);
+                input->setString(defaultStr);
+                if (filter != "") input->getInputNode()->setAllowedChars(filter);
+                input->setPosition({
+                    width - input->getContentWidth() - 5.f, CELL_HEIGHT / 2.f
+                });
+                input->setAnchorPoint({
+                    0.f, 0.5f
+                });
+                this->addChild(input);
+                break;
+            }
+            case IsPublic: {
+                toggler = CCMenuItemExt::createTogglerWithStandardSprites(
+                    0.65f,
+                    [this](CCObject*) {
+                        togglerVal = !toggler->isOn();
+                    }
+                );
+                toggler->toggle(
+                    geode::utils::numFromString<int>(defaultStr).unwrapOr(0)
+                );
+                auto menu = CCMenu::create();
+                menu->addChild(toggler);
+                menu->setPosition({
+                    width - toggler->getContentWidth() - 5.f, CELL_HEIGHT / 2.f
+                });
+                menu->setAnchorPoint({
+                    0.f, 0.5f
+                });
+                this->addChild(menu);
+                break;
+            }
+        }
 
         return true;
     }
 public:
     static constexpr int CELL_HEIGHT = 35.f;
+
     TextInput* input;
+    CCMenuItemToggler* toggler;
+
     LobbySettingType type;
+    bool togglerVal = false;
+
+    void save(LobbySettings& settings) {
+        switch (this->type) {
+            case Name: {
+                settings.name = this->input->getString();
+                break;
+            }
+            case Turns: {
+                settings.turns = geode::utils::numFromString<int>(
+                    this->input->getString()
+                ).unwrapOr(0);
+                break;
+            }
+            case MinsPerTurn: {
+                settings.minutesPerTurn = geode::utils::numFromString<int>(
+                    this->input->getString()
+                ).unwrapOr(1);
+                break;
+            }
+            case Password: {
+                // settings.password = this->input->getString();
+                break;
+            }
+            case IsPublic: {
+                settings.isPublic = togglerVal;
+                break;
+            }
+        }
+    }
 
     static LobbySettingsCell* create(float width, std::string name, LobbySettingType type, std::string desc, std::string defaultStr = "", std::string filter = "") {
         auto ret = new LobbySettingsCell;
@@ -115,9 +178,20 @@ bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
             "0123456789" \
         ));
 
+    #define ADD_SETTING_BOOL(name, element, desc, type) settingsContents->addObject( \
+        LobbySettingsCell::create( \
+            220.f, \
+            name,\
+            LobbySettingType::type, \
+            desc, \
+            std::to_string(settings.element), \
+            "" \
+        ));
+
     ADD_SETTING("Name", name, "Name of the lobby", Name)
     ADD_SETTING_INT("Turns", turns, "Number of turns per level", Turns)
     ADD_SETTING_INT("Minutes per turn", minutesPerTurn, "Amount of minutes per turn", MinsPerTurn)
+    ADD_SETTING_BOOL("Public", isPublic, "Whether the swap is public. If it is, it will be shown in the room list for others to join.", IsPublic)
     // ADD_SETTING("Password", password, Password)
 
     auto settingsList = ListView::create(settingsContents, LobbySettingsCell::CELL_HEIGHT, 220.f, 180.f);
@@ -146,30 +220,8 @@ bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
             LobbySettings newSettings = SwapManager::createDefaultSettings();
 
             for (auto cell : CCArrayExt<LobbySettingsCell*>(settingsContents)) {
-                switch (cell->type) {
-                    case Name: {
-                        newSettings.name = cell->input->getString();
-                        break;
-                    }
-                    case Turns: {
-                        newSettings.turns = geode::utils::numFromString<int>(
-                            cell->input->getString()
-                        ).unwrapOr(0);
-                        break;
-                    }
-                    case MinsPerTurn: {
-                        newSettings.minutesPerTurn = geode::utils::numFromString<int>(
-                            cell->input->getString()
-                        ).unwrapOr(1);
-                        break;
-                    }
-                    case Password: {
-                        // newSettings.password = cell->input->getString();
-                        break;
-                    }
-                }
+                cell->save(newSettings);
             }
-
             callback(newSettings);
         }
     );

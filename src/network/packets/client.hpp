@@ -6,6 +6,7 @@
 
 #include <utils.hpp>
 
+// important login packet!
 class LoginPacket : public Packet {
     CR_PACKET(5001, LoginPacket)
 
@@ -112,6 +113,15 @@ class KickUserPacket : public Packet {
     CR_SERIALIZE(
         CEREAL_NVP(userID)
     )
+};
+
+// response: RecievePublicLobbiesPacket
+class GetPublicLobbiesPacket : public Packet {
+    CR_PACKET(2009, GetPublicLobbiesPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(dummy);
 };
 
 // SWAPPING

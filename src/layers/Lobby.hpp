@@ -39,7 +39,7 @@ protected:
     void keyBackClicked();
     void createBorders();
 
-    void refresh(LobbyInfo info);
+    void refresh(LobbyInfo info, bool isFirstRefresh = false);
 
     void registerListeners();
     void unregisterListeners();

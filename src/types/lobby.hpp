@@ -4,25 +4,6 @@
 
 #include <serialization.hpp>
 
-struct LobbySettings {
-    std::string name;
-    // std::string password;
-    int turns;
-    int owner;
-    int minutesPerTurn;
-
-    bool isPublic;
-
-    CR_SERIALIZE(
-        CEREAL_NVP(name),
-        // CEREAL_NVP(password),
-        CEREAL_NVP(turns),
-        CEREAL_NVP(owner),
-        CEREAL_NVP(minutesPerTurn),
-        CEREAL_NVP(isPublic)
-    )
-};
-
 struct Account {
     std::string name;
     int userID;
@@ -38,6 +19,25 @@ struct Account {
         CEREAL_NVP(color1),
         CEREAL_NVP(color2),
         CEREAL_NVP(color3)
+    )
+};
+
+struct LobbySettings {
+    std::string name;
+    // std::string password;
+    int turns;
+    int minutesPerTurn;
+
+    Account owner;
+    bool isPublic;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(name),
+        // CEREAL_NVP(password),
+        CEREAL_NVP(turns),
+        CEREAL_NVP(owner),
+        CEREAL_NVP(minutesPerTurn),
+        CEREAL_NVP(isPublic)
     )
 };
 

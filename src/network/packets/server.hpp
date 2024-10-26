@@ -65,6 +65,20 @@ class JoinedLobbyPacket : public Packet {
 
     CR_SERIALIZE(dummy)
 };
+
+class RecievePublicLobbiesPacket : public Packet {
+    CR_PACKET(1008, RecievePublicLobbiesPacket)
+
+    RecievePublicLobbiesPacket(std::vector<LobbyInfo> lobbies) :
+        lobbies(lobbies) {}
+
+    std::vector<LobbyInfo> lobbies;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(lobbies)
+    )
+};
+
 // LEVEL SWAP //
 
 struct AccWithIndex {
