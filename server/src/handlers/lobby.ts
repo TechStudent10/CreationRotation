@@ -21,6 +21,21 @@ const matcher = new RegExpMatcher({
     ...englishRecommendedTransformers
 })
 
+function correctLobby(lobby: Lobby) {
+    if (lobby.settings.minutesPerTurn > 60) {
+        lobby.settings.minutesPerTurn = 60
+    }
+    if (lobby.settings.minutesPerTurn <= 0) {
+        lobby.settings.minutesPerTurn = 1
+    }
+    if (lobby.settings.turns > 25) {
+        lobby.settings.turns = 25
+    }
+    if (lobby.settings.turns <= 0) {
+        lobby.settings.turns = 1
+    }
+}
+
 const lobbyHandlers: Handlers = {
     2001: (socket, args, _, state) => { // CreateLobbyPacket (response: LobbyCreatedPacket)
         if (matcher.hasMatch(args.settings.name) && args.settings.isPublic) {
@@ -33,9 +48,11 @@ const lobbyHandlers: Handlers = {
             accounts: [],
             settings: args.settings
         }
+        correctLobby(newLobby)
         state.sockets[newLobby.code] = {}
         state.kickedUsers[newLobby.code] = []
         state.lobbies[newLobby.code] = newLobby
+
 
         sendPacket(
             socket,
@@ -97,7 +114,13 @@ const lobbyHandlers: Handlers = {
         // disconnectFromLobby(data)
     },
     2006: (socket, args, data, state) => { // UpdateLobbyPacket
-        const { code } = args
+        if (matcher.hasMatch(args.settings.name) && args.settings.isPublic) {
+            sendError(socket, "the lobby name cannot contain profane terminology. please pick a different name.")
+            return
+        }
+
+        const { currentLobbyCode: code } = data
+        if (!code) return
         if (!Object.keys(state.lobbies).includes(code)) {
             sendError(socket, "lobby doesn't exist")
             return
@@ -115,6 +138,7 @@ const lobbyHandlers: Handlers = {
             ...oldSettings,
             ...newArgs.settings
         }
+        correctLobby(state.lobbies[code])
 
         broadcastLobbyUpdate(state, code)
     },
