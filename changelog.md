@@ -1,3 +1,11 @@
+# 1.0.0-beta.4
+
+**New Features**
+- PUBLIC LOBBIES!!!!!!!!! You can now mark your swap as public and it'll show up in the room selector
+
+**Bugfixes**
+too many.
+
 # 1.0.0-beta.3
 
 **New Features**
