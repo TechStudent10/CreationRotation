@@ -169,7 +169,7 @@ const lobbyHandlers: Handlers = {
             socket,
             Packet.RecievePublicLobbiesPacket,
             { lobbies: Object.values(state.lobbies)
-                .filter((lobby) => lobby.settings.isPublic)
+                .filter((lobby) => lobby.settings.isPublic && !Object.keys(state.swaps).includes(lobby.code))
                 .sort((a, b) => b.accounts.length - a.accounts.length) }
         )
     }
