@@ -1,6 +1,6 @@
 {
   "name": "cr-server",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "main": "index.js",
   "author": "TechStudent10",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "typescript": "^5.5.4"
   },
   "scripts": {
-    "dev": "tsc && tsc-alias && node --experimental-sqlite out/main.js",
+    "dev": "tsc && tsc-alias && node out/main.js",
     "build": "tsc && tsc-alias"
   }
 }
