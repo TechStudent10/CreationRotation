@@ -157,3 +157,34 @@ class SendLevelPacket : public Packet {
         CEREAL_NVP(code)
     )
 };
+
+// ADMIN //
+
+class BanUserPacket : public Packet {
+    CR_PACKET(5002, BanUserPacket)
+
+    BanUserPacket(std::string reason, int user_id):
+        reason(reason),
+        user_id(user_id) {}
+
+    std::string reason;
+    int user_id;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(reason),
+        CEREAL_NVP(user_id)
+    )
+};
+
+class AuthorizeUserPacket : public Packet {
+    CR_PACKET(5003, AuthorizeUserPacket)
+
+    AuthorizeUserPacket(std::string password):
+        password(password) {}
+
+    std::string password;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(password)
+    )
+};

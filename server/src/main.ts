@@ -25,7 +25,6 @@ let peakSocketCount: number = 0
 let handlers: Handlers = {}
 
 const dbState = new DBState()
-
 let state: ServerState = {
     lobbies: {},
     kickedUsers: {},
@@ -48,7 +47,9 @@ handlerFiles.forEach(async (handlerName) => {
 })
 
 wss.on("connection", (socket) => {
-    let data: SocketData = {};
+    let data: SocketData = {
+        is_authorized: false
+    }
 
     socket.on("message", (sdata) => {
         if (sdata.toString().startsWith("login")) {
@@ -100,6 +101,8 @@ wss.on("connection", (socket) => {
             
             data.account = packetArgs.account
             data.loggedIn = true
+
+            state.dbState.loginUser(data)
 
             log.info(`new connection! ${data.account.name} (ID: ${data.account.userID}, connection #${socketCount})`)
 

@@ -12,7 +12,9 @@ export enum Packet {
     RecievePublicLobbiesPacket = "1008",
     RecieveSwappedLevelPacket = "3002",
     SwapEndedPacket = "3003",
-    ErrorPacket = "4001"
+    ErrorPacket = "4001",
+    BannedUserPacket = "4002",
+    AuthorizedUserPacket = "4003"
 }
 
 export interface ServerToClientEvents {
@@ -27,4 +29,6 @@ export interface ServerToClientEvents {
     "3002": {levels: Array<string>}
     "3003": {}
     "4001": { error: string }
+    "4002": {}
+    "4003": {}
 }

@@ -3,6 +3,7 @@ import { SocketData, ServerState } from "@/types/state"
 import log from "@/logging"
 
 import WebSocket from "ws"
+import { createHash } from "node:crypto"
 
 export function offsetArray(arr: any[], n: number): any[] {
     let array = [...arr]
@@ -10,6 +11,10 @@ export function offsetArray(arr: any[], n: number): any[] {
     const len = array.length
     array.push(...array.splice(0, (-n % len + len) % len))
     return array
+}
+
+export function hashPsw(password: string) {
+    return createHash("sha256").update(password).digest("base64")
 }
 
 export function sendPacket(socket: WebSocket, packetId: Packet, args: ServerToClientEvents[typeof packetId]) {

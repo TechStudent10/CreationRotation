@@ -49,6 +49,11 @@ export type Handlers = {
         accIdx: number
         lvlStr: string
     }, data: SocketData, state: ServerState) => void
+    // LoginPacket (5001, handled in main.ts)
+    // BanUserPacket
+    5002?: (socket: WebSocket, args: { user_id: number, reason: string }, data: SocketData, state: ServerState) => void
+    // AuthorizeUserPacket
+    5003?: (socket: WebSocket, args: { password: string }, data: SocketData, state: ServerState) => void
 
     [key: number]: Function | undefined
 }

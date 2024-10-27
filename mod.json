@@ -55,6 +55,11 @@
 			"type": "bool",
 			"default": true,
 			"description": "Delete levels when you're done with them. This does not include the last turn when you recieve your level back. Useful if you wanna keep the older versions of levels."
+		},
+		"admin-button": {
+			"name": "Admin",
+			"type": "custom:admin-button",
+			"description": "Administrator panel. Will not work without password."
 		}
 	},
 	"links": {

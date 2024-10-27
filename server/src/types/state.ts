@@ -8,6 +8,7 @@ export interface SocketData {
     currentLobbyCode?: string
     account?: Account
     loggedIn?: boolean
+    is_authorized: boolean
 }
 
 export type ServerState = {

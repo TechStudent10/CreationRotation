@@ -149,3 +149,19 @@ class ErrorPacket : public Packet {
         CEREAL_NVP(error)
     )
 };
+
+class BannedUserPacket : public Packet {
+    CR_PACKET(4002, BannedUserPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(dummy)
+};
+
+class AuthorizedUserPacket : public Packet {
+    CR_PACKET(4003, AuthorizedUserPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(dummy)
+};
