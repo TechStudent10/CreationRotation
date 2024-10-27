@@ -9,8 +9,25 @@ import { Packet } from "@/types/packet"
 import { Lobby } from "@/types/lobby"
 import log from "@/logging"
 
+import {
+    RegExpMatcher,
+    englishDataset,
+    englishRecommendedTransformers
+} from "obscenity"
+
+
+const matcher = new RegExpMatcher({
+    ...englishDataset.build(),
+    ...englishRecommendedTransformers
+})
+
 const lobbyHandlers: Handlers = {
     2001: (socket, args, _, state) => { // CreateLobbyPacket (response: LobbyCreatedPacket)
+        if (matcher.hasMatch(args.settings.name) && args.settings.isPublic) {
+            sendError(socket, "the lobby name cannot contain profane terminology. please pick a different name.")
+            return
+        }
+
         const newLobby: Lobby = {
             code: generateCode(),
             accounts: [],
