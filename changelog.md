@@ -1,7 +1,13 @@
+# 1.0.0-beta.5
+
+**Bugfixes**
+- Fixed _several_ crashes
+- Fixed currently ongoing swaps showing up in the lobby selector
+
 # 1.0.0-beta.4
 
 **New Features**
-- PUBLIC LOBBIES!!!!!!!!! You can now mark your swap as public and it'll show up in the room selector
+- PUBLIC LOBBIES!!!!!!!!! You can now mark your swap as public and it'll show up in the lobby selector
 
 **Bugfixes**
 too many.
