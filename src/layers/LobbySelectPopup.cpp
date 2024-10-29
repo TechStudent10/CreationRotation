@@ -96,6 +96,7 @@ LobbySelectPopup* LobbySelectPopup::create() {
 
 bool LobbySelectPopup::setup() {
     this->setTitle("Creation Rotation");
+    this->setID("select-popup"_spr);
 
     auto mainMenu = CCMenu::create();
 
@@ -165,6 +166,8 @@ void LobbySelectPopup::refresh(bool isFirstTime) {
     auto& nm = NetworkManager::get();
     nm.addToQueue(GetPublicLobbiesPacket::create());
     nm.on<RecievePublicLobbiesPacket>([this, isFirstTime](RecievePublicLobbiesPacket* packet) {
+        if (!CCScene::get()->getChildByID("select-popup"_spr)) return;
+
         if (!isFirstTime) lobbyList->removeFromParent();
         auto listItems = CCArray::create();
 

@@ -267,6 +267,8 @@ void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
     auto size = CCDirector::sharedDirector()->getWinSize();
     auto listWidth = size.width / 1.5f;
 
+    if (!mainLayer) return;
+
     if (isFirstRefresh) {
         titleLabel = CCLabelBMFont::create(
             info.settings.name.c_str(),
@@ -301,6 +303,7 @@ void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
         ).c_str()
     );
 
+    if (!playerList && !isFirstRefresh) return;
     if (playerList) playerList->removeFromParent();
 
     using namespace geode::utils; 

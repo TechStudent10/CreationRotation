@@ -169,6 +169,14 @@ void SwapManager::registerListeners() {
         );
     });
     nm.on<RecieveSwappedLevelPacket>([this](RecieveSwappedLevelPacket* packet) {
+        if (packet->levels.size() < swapIdx) {
+            FLAlertLayer::create(
+                "Creation Rotation",
+                "<cr>There was an error while fetching the swapped level. If you're reading this, something has gone terribly wrong, please report it at once.</c>",
+                "OK"
+            )->show();
+            return;
+        }
         auto gmdStr = packet->levels[swapIdx];
 
         auto filePath = std::filesystem::temp_directory_path() / fmt::format("temp{}.gmd", rand());
