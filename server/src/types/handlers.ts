@@ -54,6 +54,8 @@ export type Handlers = {
     5002?: (socket: WebSocket, args: { user_id: number, reason: string }, data: SocketData, state: ServerState) => void
     // AuthorizeUserPacket
     5003?: (socket: WebSocket, args: { password: string }, data: SocketData, state: ServerState) => void
+    // MessageSentPacket
+    5004?: (socket: WebSocket, args: { account_id: number }, data: SocketData, state: ServerState) => void 
 
     [key: number]: Function | undefined
 }

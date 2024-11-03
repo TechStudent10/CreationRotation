@@ -14,6 +14,8 @@ import pako from "pako"
 import log from "./logging"
 import { DBState } from "./db/db"
 import { ErrorHandler } from "./error_handler"
+import getConfig from "./config"
+import { AuthManager } from "./auth"
 
 const app = express()
 const httpServer = createServer(app)
@@ -30,8 +32,26 @@ let state: ServerState = {
     kickedUsers: {},
     sockets: {},
     swaps: {},
+    serverConfig: getConfig(),
     dbState
 }
+state.authManager = new AuthManager(state)
+state.authManager.getMessages()
+
+// fetch(
+//     `${state.serverConfig.boomlingsUrl}/database/getGJMessages20.php`,
+//     {
+//         headers: {
+//             "User-Agent": ""
+//         },
+//         method: "POST",
+//         body: new URLSearchParams({
+//             secret: "Wmfd2893gb7",
+//             gjp2: state.serverConfig.botAccountGJP2,
+//             accountID: `${state.serverConfig.botAccountID}`
+//         })
+//     }
+// ).then(res => res.text()).then(res => console.log(res))
 
 const handlerFiles = ["lobby", "swap"]
 
