@@ -1,19 +1,22 @@
 import log from "./logging"
+import { ServerState } from "./types/state"
 
 export interface ErrorHandler {
-    webhook_url: string
+    webhookUrl: string
+    serverState: ServerState
 }
 
 export class ErrorHandler {
-    constructor(webhook_url: string) {
-        this.webhook_url = webhook_url
+    constructor(webhook_url: string, state: ServerState) {
+        this.webhookUrl = webhook_url
+        this.serverState = state
     }
 
     notifyError(err: Error) {
         log.error(err.stack)
 
         fetch(
-            this.webhook_url, {
+            this.webhookUrl, {
                 method: "POST",
                 body: JSON.stringify({
                     embeds: [
@@ -33,10 +36,30 @@ export class ErrorHandler {
     }
 
     registerListeners() {
+        const exitServ = () => {
+            log.info("gracefully exitting server")
+            process.exit()
+        }
+
         // todo: make exit finish all swaps
-        process.on('exit', () => {})
         process.on('uncaughtException', (err) => {
             this.notifyError(err)
+        })
+        process.on("SIGINT", () => {
+            log.info("got Control+C")
+            exitServ()
+        })
+        process.on("SIGTERM", () => {
+            log.info("Process killed")
+            exitServ()
+        })
+        process.on("SIGHUP", () => {
+            log.info("Process killed")
+            exitServ()
+        })
+        process.on("SIGBREAK", () => {
+            log.info("Process killed")
+            exitServ()
         })
         log.info("error handlers registered")
     }

@@ -163,7 +163,7 @@ app.get("/stats", (req, res) => {
 
 const port = process.env.PORT || 3000
 
-const errHandler = new ErrorHandler(process.env.WEBHOOK_URL || "")
+const errHandler = new ErrorHandler(process.env.WEBHOOK_URL || "", state)
 errHandler.registerListeners()
 
 log.info(`listening on port ${port}`)
