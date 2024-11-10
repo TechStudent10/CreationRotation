@@ -7,13 +7,15 @@ export interface ErrorHandler {
 }
 
 export class ErrorHandler {
-    constructor(webhook_url: string, state: ServerState) {
-        this.webhookUrl = webhook_url
+    constructor(state: ServerState) {
+        this.webhookUrl = state.serverConfig.webhookUrl || ""
         this.serverState = state
     }
 
     notifyError(err: Error) {
         log.error(err.stack)
+
+        if (this.webhookUrl == "") return
 
         fetch(
             this.webhookUrl, {

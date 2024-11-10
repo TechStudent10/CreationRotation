@@ -6,19 +6,6 @@
 
 #include <utils.hpp>
 
-// important login packet!
-class LoginPacket : public Packet {
-    CR_PACKET(5001, LoginPacket)
-
-    std::string version = geode::Mod::get()->getVersion().toVString();
-    Account account = cr::utils::createAccountType();
-
-    CR_SERIALIZE(
-        CEREAL_NVP(version),
-        CEREAL_NVP(account)
-    )
-};
-
 // response: LobbyCreatedPacket
 class CreateLobbyPacket : public Packet {
     CR_PACKET(2001, CreateLobbyPacket)
@@ -186,5 +173,51 @@ class AuthorizeUserPacket : public Packet {
 
     CR_SERIALIZE(
         CEREAL_NVP(password)
+    )
+};
+
+// AUTH STUFF
+
+class LoginPacket : public Packet {
+    CR_PACKET(5001, LoginPacket)
+
+    std::string version = geode::Mod::get()->getVersion().toVString();
+    Account account = cr::utils::createAccountType();
+
+    LoginPacket(std::string token) :
+        token(token) {}
+
+    std::string token;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(version),
+        CEREAL_NVP(account),
+        CEREAL_NVP(token)
+    )
+};
+
+class RequestAuthorizationPacket : public Packet {
+    CR_PACKET(5004, RequestAuthorizationPacket)
+
+    RequestAuthorizationPacket(int account_id):
+        account_id(account_id) {}
+
+    int account_id;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(account_id)
+    )
+};
+
+class VerifyAuthPacket : public Packet {
+    CR_PACKET(5005, VerifyAuthPacket)
+
+    VerifyAuthPacket(Account account) :
+        account(account) {}
+
+    Account account;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(account)
     )
 };

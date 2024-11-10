@@ -18,6 +18,7 @@ Account cr::utils::createAccountType() {
     return {
         .name = gm->m_playerName,
         .userID = gm->m_playerUserID.value(),
+        .accountID = GJAccountManager::sharedState()->m_accountID,
         .iconID = gm->getPlayerFrame(),
         .color1 = gm->m_playerColor.value(),
         .color2 = gm->m_playerColor2.value(),

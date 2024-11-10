@@ -1,14 +1,13 @@
 #include "manager.hpp"
 
 #include <utils.hpp>
-#include "packets/client.hpp"
 #include "packets/server.hpp"
 
 NetworkManager::NetworkManager() {
     ix::initNetSystem();
 }
 
-void NetworkManager::connect(bool shouldReconnect) {
+void NetworkManager::connect(bool shouldReconnect, std::function<void()> callback) {
     log::debug("connecting");
     if (this->isConnected && shouldReconnect) {
         // disconnect then reconnect
@@ -31,7 +30,7 @@ void NetworkManager::connect(bool shouldReconnect) {
     socket.setTLSOptions(tlsOptions);
 #endif
 
-    socket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
+    socket.setOnMessageCallback([this, callback](const ix::WebSocketMessagePtr& msg) {
         if (msg->type == ix::WebSocketMessageType::Error) {
             const auto errReason = msg->errorInfo.reason;
             log::error("ixwebsocket error: {}", errReason);
@@ -46,11 +45,6 @@ void NetworkManager::connect(bool shouldReconnect) {
         } else if (msg->type == ix::WebSocketMessageType::Open) {
             log::debug("connection success!");
 
-            // send login data
-            this->send(
-                LoginPacket::create()
-            );
-
             // register error packet
             this->on<ErrorPacket>([](ErrorPacket* packet) {
                 FLAlertLayer::create(
@@ -59,6 +53,9 @@ void NetworkManager::connect(bool shouldReconnect) {
                     "OK"
                 )->show();
             });
+
+            // call the callback
+            callback();
 
             // send all packets in queue
             for (auto packetFn : packetQueue) {

@@ -9,6 +9,7 @@
 
 #include <network/manager.hpp>
 #include <managers/SwapManager.hpp>
+#include <managers/AuthManager.hpp>
 
 #include <utils.hpp>
 
@@ -73,8 +74,12 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 		auto& sm = SwapManager::get();
 		if (sm.currentLobbyCode == "") {
 			auto& nm = NetworkManager::get();
-			nm.connect(true);
-			LobbySelectPopup::create()->show();
+			nm.connect(true, []() {
+				auto& am = AuthManager::get();
+				am.login([]() {
+					LobbySelectPopup::create()->show();
+				});
+			});
 		} else {
 			auto layer = LobbyLayer::create(sm.currentLobbyCode);
 			auto scene = CCScene::create();

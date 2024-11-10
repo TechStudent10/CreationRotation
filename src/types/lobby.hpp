@@ -6,7 +6,10 @@
 
 struct Account {
     std::string name;
+
     int userID;
+    int accountID;
+
     int iconID;
     int color1;
     int color2;
@@ -15,6 +18,7 @@ struct Account {
     CR_SERIALIZE(
         CEREAL_NVP(name),
         CEREAL_NVP(userID),
+        CEREAL_NVP(accountID),
         CEREAL_NVP(iconID),
         CEREAL_NVP(color1),
         CEREAL_NVP(color2),

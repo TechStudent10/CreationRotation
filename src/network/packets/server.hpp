@@ -165,3 +165,31 @@ class AuthorizedUserPacket : public Packet {
 
     CR_SERIALIZE(dummy)
 };
+
+class RecieveAuthCodePacket : public Packet {
+    CR_PACKET(4004, RecieveAuthCodePacket)
+
+    RecieveAuthCodePacket(std::string code, int botAccID):
+        code(code), botAccID(botAccID) {}
+
+    std::string code;
+    int botAccID;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(code),
+        CEREAL_NVP(botAccID)
+    )
+};
+
+class RecieveTokenPacket : public Packet {
+    CR_PACKET(4005, RecieveTokenPacket)
+
+    RecieveTokenPacket(std::string token):
+        token(token) {}
+
+    std::string token;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(token)
+    )
+};

@@ -13,7 +13,7 @@ export function offsetArray(arr: any[], n: number): any[] {
     return array
 }
 
-export function hashPsw(password: string) {
+export function hashPsw(password: string): string {
     return createHash("sha256").update(password).digest("base64")
 }
 

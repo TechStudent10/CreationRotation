@@ -14,7 +14,9 @@ export enum Packet {
     SwapEndedPacket = "3003",
     ErrorPacket = "4001",
     BannedUserPacket = "4002",
-    AuthorizedUserPacket = "4003"
+    AuthorizedUserPacket = "4003",
+    RecieveAuthCodePacket = "4004",
+    RecieveTokenPacket = "4005"
 }
 
 export interface ServerToClientEvents {
@@ -31,4 +33,6 @@ export interface ServerToClientEvents {
     "4001": { error: string }
     "4002": {}
     "4003": {}
+    "4004": { botAccID: number, code: string }
+    "4005": { token: string }
 }

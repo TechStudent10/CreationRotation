@@ -10,7 +10,8 @@ import log from "@/logging"
 
 import { hashPsw } from "@/utils"
 
-import { createHash } from "node:crypto"
+import { randomBytes } from "node:crypto"
+import { Account } from "@/types/account"
 
 export const DB_PATH = path.join(__dirname, "database.db")
 
@@ -66,6 +67,47 @@ export class DBState {
         )
 
         return 1 // success!
+    }
+
+    async hasAuthenticated(accountID: number) {
+        const db = await this.openDB()
+        return await db.get("SELECT * FROM users WHERE account_id = ?", accountID) !== undefined
+    }
+
+    async registerUser(account: Account) {
+        const token = randomBytes(30).toString("hex")
+        const db = await this.openDB()
+
+        await db.run(
+            `
+            INSERT INTO users (account_id, user_id, username, token)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT (account_id) DO
+            UPDATE SET user_id = ?, username = ?, token = ?
+            `,
+            account.accountID, account.userID, account.name, token,
+            account.userID, account.name, token
+        )
+
+        return token
+    }
+
+    async isValidToken(accountID: number, token: string) {
+        // if we haven't even authenticated yet, the token is invalid
+        if (!this.hasAuthenticated(accountID)) return false
+
+        const db = await this.openDB()
+
+        const { token: acc_token } = await db.get(
+            `
+            SELECT token FROM users WHERE account_id = ?
+            `,
+            accountID
+        )
+
+        log.info(acc_token + " " + token)
+
+        return token == acc_token
     }
 
     async loginUser(data: SocketData) {

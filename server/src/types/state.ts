@@ -19,12 +19,16 @@ export type ServerState = {
     swaps : { [code: string]: Swap }
     kickedUsers : { [code: string]: number[] }
     sockets : { [code: string]: { [userID: number]: WebSocket } }
+    verifyCodes: { [accountID: number] : string }
     dbState: DBState
     serverConfig: Config
+    socketCount: number
+    peakSocketCount: number
     authManager?: AuthManager
 }
 
 export type LoginInfo = {
     version: string
     account: Account
+    token: string
 }

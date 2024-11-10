@@ -1,15 +1,23 @@
+import { Account } from "./types/account"
 import { ServerState } from "./types/state"
+import WebSocket from "ws"
+import { sendPacket } from "./utils"
+import { Packet } from "./types/packet"
+import log from "./logging"
 
 export interface AuthManager {
     state: ServerState
+
+    accountsToAuth: Array<{ socket: WebSocket, account: Account }>
+
+    cachedMessages: { [key: number] : Message }
 }
 
-type Message = {
+export type Message = {
     messageID: number
     accountID: number
     playerID: number
     title: string
-    content: string
     username: string
     age: string
 }
@@ -26,6 +34,11 @@ const parseKeyMap = (keyMap: string) => keyMap.split(":")
 export class AuthManager {
     constructor(state: ServerState) {
         this.state = state
+        this.accountsToAuth = []
+
+        setInterval(() => {
+            this.updateMessagesCache()
+        }, 4500) // 4500 = 4.5 seconds in milliseconds
     }
 
     private async sendBoomlingsReq(url: string, data: {[key: string] : string}, method: string = "POST") {
@@ -53,26 +66,60 @@ export class AuthManager {
     }
 
     async getMessages() {
+        return this.cachedMessages
+    }
+
+    private async updateMessagesCache() {
         const messagesStr = (await this.sendAuthenticatedBoomlingsReq("database/getGJMessages20.php", {}))
             .split("|")
         
-        let result: { [key: number] : Message } = {}
+        log.info("refreshing cache")
+
+        this.cachedMessages = {}
         messagesStr.forEach(async (messageStr) => {
-            const msgID = parseKeyMap(messageStr)["1"]
-            messageStr = await this.sendAuthenticatedBoomlingsReq("database/downloadGJMessage20.php", { messageID: msgID })
             const msgObj = parseKeyMap(messageStr)
-            console.log(msgObj)
-            result[msgID] = {
+            const msgID = parseInt(msgObj["1"])
+            this.cachedMessages[msgID] = {
                 accountID: parseInt(msgObj["2"]),
                 age: msgObj["7"],
-                content: this.xor(Buffer.from(msgObj["5"], "base64").toString("ascii"), "14251"),
-                messageID: parseInt(msgID),
+                messageID: msgID,
                 playerID: parseInt(msgObj["3"]),
                 title: Buffer.from(msgObj["4"], "base64").toString("ascii"),
                 username: msgObj["6"]
             }
         })
-        return result
+
+        let outdatedMessages: number[] = []
+
+        Object.values(this.cachedMessages).forEach(async message => {
+            this.accountsToAuth.forEach(async acc => {
+                if (message.accountID !== acc.account.accountID) return
+
+                if (message.title === this.state.verifyCodes[acc.account.accountID]) {
+                    const token = await this.state.dbState.registerUser(acc.account)
+                    sendPacket(acc.socket, Packet.RecieveTokenPacket, { token })
+                    outdatedMessages.push(message.messageID)
+                }
+            })
+        })
+
+        this.accountsToAuth = []
+        await this.sendAuthenticatedBoomlingsReq("database/deleteGJMessages20.php", {
+            messages: outdatedMessages.join(",")
+        })
+    }
+
+    async sendMessage(toAccID: number, subject: string, body: string) {
+        return await this.sendAuthenticatedBoomlingsReq("database/uploadGJMessage20.php", {
+            toAccountID: toAccID.toString(),
+            subject: this.urlsafeb64(subject),
+            body: this.urlsafeb64(this.xor(body, "14251"))
+        })
+    }
+
+    // helper function for converting to URL-safe b64
+    urlsafeb64(input: string) {
+        return Buffer.from(input, "utf8").toString("base64")
     }
 
     // cycle xor algorithm from

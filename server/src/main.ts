@@ -4,7 +4,6 @@ dotenv.config()
 import WebSocket from "ws"
 import { createServer } from "http"
 import { default as express } from "express"
-import { version } from "../package.json"
 
 import { Handlers } from "@/types/handlers"
 import { SocketData, LoginInfo, ServerState } from "./types/state"
@@ -21,9 +20,6 @@ const app = express()
 const httpServer = createServer(app)
 const wss = new WebSocket.Server({ server: httpServer })
 
-let socketCount: number = 0
-let peakSocketCount: number = 0
-
 let handlers: Handlers = {}
 
 const dbState = new DBState()
@@ -32,28 +28,18 @@ let state: ServerState = {
     kickedUsers: {},
     sockets: {},
     swaps: {},
+    verifyCodes: {},
     serverConfig: getConfig(),
+    socketCount: 0,
+    peakSocketCount: 0,
     dbState
 }
 state.authManager = new AuthManager(state)
-state.authManager.getMessages()
+// state.authManager.sendMessage(20284359, "dum dum", "Hi dood")
+dbState.hasAuthenticated(20284359).then(has => log.info(has))
 
-// fetch(
-//     `${state.serverConfig.boomlingsUrl}/database/getGJMessages20.php`,
-//     {
-//         headers: {
-//             "User-Agent": ""
-//         },
-//         method: "POST",
-//         body: new URLSearchParams({
-//             secret: "Wmfd2893gb7",
-//             gjp2: state.serverConfig.botAccountGJP2,
-//             accountID: `${state.serverConfig.botAccountID}`
-//         })
-//     }
-// ).then(res => res.text()).then(res => console.log(res))
 
-const handlerFiles = ["lobby", "swap"]
+const handlerFiles = ["lobby", "swap", "user"]
 
 handlerFiles.forEach(async (handlerName) => {
     try {
@@ -72,21 +58,6 @@ wss.on("connection", (socket) => {
     }
 
     socket.on("message", (sdata) => {
-        if (sdata.toString().startsWith("login")) {
-            const loginJson = JSON.parse(sdata.toString().split("|", 2)[1]) as LoginInfo
-            if (!loginJson || typeof loginJson !== "object") {
-                log.log("login", `recieved invalid login information`)
-                return
-            }
-            let modVersion = loginJson.version.replace("v", "")
-            if (modVersion !== version) {
-                socket.close(1000, `version mismatch: mod version <cy>${modVersion}</c> does not equal server version <cy>${version}</c>`)
-                return
-            }
-            data.loggedIn = true
-            return
-        }
-
         let inflatedData: string;
         try {
             inflatedData = pako.inflate(sdata as Buffer, { to: "string" }).toString()
@@ -104,33 +75,29 @@ wss.on("connection", (socket) => {
         }   
         const packetId = args["packet_id"]
 
-        // handle the login packet first, it's special
-        if (packetId === 5001) {
-            const { packet: packetArgs } = args as { packet: LoginInfo }
-            
-            let modVersion = packetArgs.version.replace("v", "")
-            if (modVersion !== version) {
-                socket.close(1000, `version mismatch: mod version <cy>${modVersion}</c> does not equal server version <cy>${version}</c>`)
+        const doTheThing = () => {
+            if (!Object.keys(handlers).includes(String(packetId))) {
+                log.packet(`unhandled packet ${packetId}`)
                 return
             }
 
-            socketCount++
-            if (socketCount > peakSocketCount) {
-                peakSocketCount = socketCount
+            log.packet(`handling packet ${packetId}`)
+
+            // we love committing typescript war crimes
+            const handlerFunc = handlers[packetId as any]
+            if (handlerFunc) {
+                handlerFunc(socket, args["packet"], data, state)
             }
-            
-            data.account = packetArgs.account
-            data.loggedIn = true
-
-            state.dbState.loginUser(data)
-
-            log.info(`new connection! ${data.account.name} (ID: ${data.account.userID}, connection #${socketCount})`)
-
-            return
         }
 
-        if (!Object.keys(handlers).includes(String(packetId))) {
-            log.packet(`unhandled packet ${packetId}`)
+        // handle the login packet first, it's special
+        if (packetId >= 5000) {
+            doTheThing()
+
+            const { packet: packetArgs } = args as { packet: LoginInfo }
+            
+            
+
             return
         }
 
@@ -142,18 +109,12 @@ wss.on("connection", (socket) => {
             return
         }
 
-        log.packet(`handling packet ${packetId}`)
-
-        // we love committing javascript war crimes
-        const handlerFunc = handlers[packetId as any]
-        if (handlerFunc) {
-            handlerFunc(socket, args["packet"], data, state)
-        }
+        doTheThing()
     })
 
     socket.on("close", (code, reason) => {
         if (!data.loggedIn) return
-        socketCount--
+        state.socketCount--
         disconnectFromLobby(data, state)
     })
 
@@ -174,16 +135,16 @@ app.get("/stats", (req, res) => {
             <br>
             Lobbies subtract swaps (inactive swaps): <b>${getLength(state.lobbies) - getLength(state.swaps)}</b>
             <br>
-            Number of connected clients: <b>${socketCount}</b>
+            Number of connected clients: <b>${state.socketCount}</b>
             <br>
-            Peak number of connected clients: <b>${peakSocketCount}</b>
+            Peak number of connected clients: <b>${state.peakSocketCount}</b>
         </p>
     `)
 })
 
 const port = process.env.PORT || 3000
 
-const errHandler = new ErrorHandler(process.env.WEBHOOK_URL || "", state)
+const errHandler = new ErrorHandler(state)
 errHandler.registerListeners()
 
 log.info(`listening on port ${port}`)

@@ -1,5 +1,5 @@
 import { Account } from "./account"
-import { SocketData, ServerState } from "./state"
+import { SocketData, ServerState, LoginInfo } from "./state"
 import { LobbySettings } from "./lobby"
 
 import WebSocket from "ws"
@@ -49,13 +49,16 @@ export type Handlers = {
         accIdx: number
         lvlStr: string
     }, data: SocketData, state: ServerState) => void
-    // LoginPacket (5001, handled in main.ts)
+    // LoginPacket
+    5001?: (socket: WebSocket, args: LoginInfo, data: SocketData, state: ServerState) => void
     // BanUserPacket
     5002?: (socket: WebSocket, args: { user_id: number, reason: string }, data: SocketData, state: ServerState) => void
     // AuthorizeUserPacket
     5003?: (socket: WebSocket, args: { password: string }, data: SocketData, state: ServerState) => void
-    // MessageSentPacket
+    // RequestAuthorizationPacket
     5004?: (socket: WebSocket, args: { account_id: number }, data: SocketData, state: ServerState) => void 
+    // VerifyAuthPacket
+    5005?: (socket: WebSocket, args: { account: Account }, data: SocketData, state: ServerState) => void
 
     [key: number]: Function | undefined
 }

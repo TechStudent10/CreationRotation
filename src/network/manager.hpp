@@ -37,7 +37,7 @@ public:
 
     bool isConnected = false;
 
-    void connect(bool shouldReconnect = true);
+    void connect(bool shouldReconnect = true, std::function<void()> callback = []() {});
     void disconnect();
 
     template<typename T>
