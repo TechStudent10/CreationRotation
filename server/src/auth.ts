@@ -37,6 +37,8 @@ export class AuthManager {
         this.accountsToAuth = []
 
         setInterval(() => {
+            if (this.accountsToAuth.length <= 0) return
+            
             this.updateMessagesCache()
         }, 4500) // 4500 = 4.5 seconds in milliseconds
     }
