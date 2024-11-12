@@ -91,7 +91,8 @@ public:
             cereal::JSONOutputArchive oarchive(ss);
             oarchive(cereal::make_nvp("packet", *packet));
         }
-        auto json = matjson::parse(ss.str());
+        auto json = matjson::parse(ss.str()).mapErr([](std::string err) { return err; }).unwrap();
+        
         json["packet_id"] = packet->getPacketID();
         auto uncompressedStr = json.dump(0);
         unsigned char* compressedData;

@@ -10,7 +10,7 @@ using namespace geode::prelude;
 
 class AdminButtonSetting : public SettingV3 {
 public:
-    static Result<std::shared_ptr<AdminButtonSetting>> parse(std::string const& key, std::string const& modID, matjson::Value const& json) {
+    static Result<std::shared_ptr<SettingV3>> parse(std::string const& key, std::string const& modID, matjson::Value const& json) {
         auto res = std::make_shared<AdminButtonSetting>();
         auto root = checkJson(json, "AdminButtonSetting");
 
@@ -19,7 +19,7 @@ public:
         res->parseEnableIf(root);
         
         root.checkUnknownKeys();
-        return root.ok(res);
+        return root.ok(std::static_pointer_cast<SettingV3>(res));
     }
 
     bool load(matjson::Value const& json) override {

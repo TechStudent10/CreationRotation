@@ -184,19 +184,26 @@ void SwapManager::registerListeners() {
         ostream << gmdStr;
         ostream.close();
 
-        auto lvl = gmd::importGmdAsLevel(filePath);
-        if (lvl) {
-            levelId = EditorIDs::getID(*lvl);
-            LocalLevelManager::get()->m_localLevels->insertObject(*lvl, 0);
+        auto lvlRes = gmd::importGmdAsLevel(filePath);
+        if (!lvlRes.isErr()) {
+            auto lvl = lvlRes.unwrap();
+            levelId = EditorIDs::getID(lvl);
+            LocalLevelManager::get()->m_localLevels->insertObject(lvl, 0);
 
             #ifdef GEODE_IS_MACOS
             try {
             #endif
-            auto scene = EditLevelLayer::scene(*lvl);
+            auto scene = EditLevelLayer::scene(lvl);
             cr::utils::replaceScene(scene);
             #ifdef GEODE_IS_MACOS
             } catch (std::exception e) {}
             #endif
+        } else {
+            FLAlertLayer::create(
+                "Creation Rotation",
+                fmt::format("There was an error importing the level: \n<cy>{}</c>", lvlRes.err()),
+                "OK"
+            )->show();
         }
 
         roundStartedTime = time(0);
