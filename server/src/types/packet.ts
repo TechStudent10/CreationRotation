@@ -1,4 +1,4 @@
-import { Lobby } from "./lobby"
+import { Lobby, Message } from "./lobby"
 import { Account } from "./account"
 
 export enum Packet {
@@ -6,10 +6,11 @@ export enum Packet {
     RecieveAccountsPacket = "1002",
     RecieveLobbyInfoPacket = "1003",
     LobbyUpdatedPacket = "1004",
-    JoinedLobbyPacket = "1007",
     SwapStartedPacket = "1005",
     TimeToSwapPacket = "1006",
+    JoinedLobbyPacket = "1007",
     RecievePublicLobbiesPacket = "1008",
+    MessageSentPacket = "1009",
     RecieveSwappedLevelPacket = "3002",
     SwapEndedPacket = "3003",
     ErrorPacket = "4001",
@@ -20,19 +21,20 @@ export enum Packet {
 }
 
 export interface ServerToClientEvents {
-    "1001": {info: Lobby}
-    "1002": {accounts: Account[]}
-    "1003": {info: Lobby}
-    "1004": {info: Lobby}
-    "1005": {accounts: Array<{ index: number, accID: string }>}
-    "1006": {}
-    "1007": {}
-    "1008": {lobbies: Lobby[]}
-    "3002": {levels: Array<string>}
-    "3003": {}
-    "4001": { error: string }
-    "4002": {}
-    "4003": {}
-    "4004": { botAccID: number, code: string }
-    "4005": { token: string }
+    "1001": { info: Lobby } // LobbyCreatedPacket
+    "1002": { accounts: Account[] } // RecieveAccountsPacket
+    "1003": { info: Lobby } // RecieveLobbyInfoPacket
+    "1004": { info: Lobby } // LobbyUpdatedPacket
+    "1005": { accounts: Array<{ index: number, accID: string }> } //SwapStartedPacket
+    "1006": {} // TimeToSwapPacket
+    "1007": {} // JoinedLobbyPacket
+    "1008": { lobbies: Lobby[] } // RecievePublicLobbiesPacket
+    "1009": { message: Message } // MessageSentPacket
+    "3002": { levels: Array<string> } // RecieveSwappedLevelPacket
+    "3003": {} // SwapEndedPacket
+    "4001": { error: string } // ErrorPacket
+    "4002": {} // BannedUserPacket
+    "4003": {} // AuthorizedUserPacket
+    "4004": { botAccID: number, code: string } // RecieveAuthCodePacket
+    "4005": { token: string } // RecieveTokenPacket
 }

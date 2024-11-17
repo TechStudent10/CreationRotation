@@ -111,6 +111,19 @@ class GetPublicLobbiesPacket : public Packet {
     CR_SERIALIZE(dummy);
 };
 
+class SendMessagePacket : public Packet {
+    CR_PACKET(2010, SendMessagePacket)
+
+    SendMessagePacket(std::string message) :
+        message(message) {}
+
+    std::string message;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(message)
+    )
+};
+
 // SWAPPING
 
 class StartSwapPacket : public Packet {

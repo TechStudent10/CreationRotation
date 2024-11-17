@@ -79,6 +79,19 @@ class RecievePublicLobbiesPacket : public Packet {
     )
 };
 
+class MessageSentPacket : public Packet {
+    CR_PACKET(1009, MessageSentPacket)
+
+    MessageSentPacket(Message message) :
+        message(message) {}
+
+    Message message;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(message)
+    )
+};
+    
 // LEVEL SWAP //
 
 struct AccWithIndex {

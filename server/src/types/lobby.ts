@@ -12,5 +12,11 @@ export type LobbySettings = {
     owner: Account // owner user account
     // password?: string
     minutesPerTurn: number
-    isPublic: boolean // this will be a nightmare to add
+    isPublic: boolean // this will be a nightmare to add (update: it wasn't, somehow)
+}
+
+export type Message = {
+    message: string
+    timestamp: number
+    author: Account
 }

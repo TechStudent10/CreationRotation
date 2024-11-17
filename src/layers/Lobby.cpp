@@ -6,6 +6,7 @@
 #include <network/packets/client.hpp>
 
 #include "LobbySettings.hpp"
+#include "ChatPanel.hpp"
 
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 
@@ -105,6 +106,8 @@ LobbyLayer* LobbyLayer::create(std::string code) {
 bool LobbyLayer::init(std::string code) {
     lobbyCode = code;
 
+    ChatPanel::initialize();
+
     auto director = CCDirector::sharedDirector();
     auto size = director->getWinSize();
 
@@ -164,6 +167,14 @@ bool LobbyLayer::init(std::string code) {
 
     mainLayer->addChild(startMenu);
 
+    auto msgButtonSpr = CCSprite::create("messagesBtn.png"_spr);
+    auto msgButton = CCMenuItemExt::createSpriteExtra(
+        msgButtonSpr,
+        [](CCObject*) {
+            ChatPanel::create()->show();
+        }
+    );
+
     auto settingsBtnSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn02_001.png");
     settingsBtn = CCMenuItemSpriteExtra::create(
         settingsBtnSpr, this, menu_selector(LobbyLayer::onSettings)
@@ -178,7 +189,11 @@ bool LobbyLayer::init(std::string code) {
             });
         }
     );
+
+    cr::utils::scaleToMatch(settingsBtnSpr, msgButtonSpr, true);
+
     auto bottomMenu = CCMenu::create();
+    bottomMenu->addChild(msgButton);
     bottomMenu->addChild(settingsBtn);
     bottomMenu->addChild(refreshBtn);
     bottomMenu->setPosition(

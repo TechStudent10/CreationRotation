@@ -72,7 +72,7 @@ protected:
 
     void onButton(CCObject*) {
         // we can worry about this later
-        // AuthPopup::create()->show();
+        AuthPopup::create()->show();
     }
 
     void onCommit() override {}

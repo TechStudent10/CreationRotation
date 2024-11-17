@@ -56,3 +56,15 @@ struct LobbyInfo {
         CEREAL_NVP(accounts)
     )
 };
+
+struct Message {
+    std::string message;
+    int timestamp;
+    Account author;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(message),
+        CEREAL_NVP(timestamp),
+        CEREAL_NVP(author)
+    )
+};

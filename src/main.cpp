@@ -3,9 +3,11 @@
 #include <Geode/modify/LevelBrowserLayer.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
+#include <Geode/modify/EditorPauseLayer.hpp>
 
 #include <layers/Lobby.hpp>
 #include <layers/LobbySelectPopup.hpp>
+#include <layers/ChatPanel.hpp>
 
 #include <network/manager.hpp>
 #include <managers/SwapManager.hpp>
@@ -55,6 +57,11 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 
 		auto menu = this->getChildByID("my-levels-menu");
 		if (menu) {
+			if (auto lvlsBtn = menu->getChildByID("my-levels-button")) {
+				if (auto lvlsBtnSpr = lvlsBtn->getChildByType<CCSprite>(0)) {
+					cr::utils::scaleToMatch(lvlsBtnSpr, btnSpr, true);
+				}
+			}
 			menu->addChild(myButton);
 			menu->updateLayout();
 		} else {
@@ -170,5 +177,38 @@ class $modify(CRLvlInfoLayer, LevelInfoLayer) {
 				this->onPlay(sender);
 			}
 		);
+	}
+};
+
+// guidelines-menu
+// help-button
+
+class $modify(EditorPauseLayer) {
+	bool init(LevelEditorLayer* lel) {
+		if (!EditorPauseLayer::init(lel)) return false;
+
+		auto& sm = SwapManager::get();
+		if (sm.currentLobbyCode == "") {
+			return true;
+		}
+
+		if (auto menu = this->getChildByID("guidelines-menu")) {
+			auto msgButtonSpr = CCSprite::create("messagesBtn.png"_spr);
+			if (auto helpBtn = menu->getChildByID("help-button")) {
+				if (auto helpSpr = helpBtn->getChildByType<CCSprite>(0)) {
+					cr::utils::scaleToMatch(helpSpr, msgButtonSpr, true);
+				}
+			}
+			auto msgButton = CCMenuItemExt::createSpriteExtra(
+				msgButtonSpr,
+				[](CCObject*) {
+					ChatPanel::create()->show();
+				}
+			);
+			menu->addChild(msgButton);
+			menu->updateLayout();
+		}
+
+		return true;
 	}
 };

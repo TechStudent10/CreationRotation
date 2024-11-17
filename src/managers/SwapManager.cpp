@@ -6,6 +6,7 @@
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include <hjfod.gmd-api/include/GMD.hpp>
 
+#include <layers/ChatPanel.hpp>
 #include <utils.hpp>
 
 using namespace geode::prelude;
@@ -89,6 +90,7 @@ void SwapManager::disconnectLobby() {
 
     auto& nm = NetworkManager::get();
     this->currentLobbyCode = "";
+    ChatPanel::clearMessages();
 
     // no longer needed
     // nm.send(DisconnectFromLobbyPacket::create());

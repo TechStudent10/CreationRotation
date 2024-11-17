@@ -3,7 +3,8 @@ import {
     generateCode,
     sendPacket,
     sendError,
-    broadcastLobbyUpdate
+    broadcastLobbyUpdate,
+    emitToLobby
 } from "@/utils"
 import { Packet } from "@/types/packet"
 import { Lobby } from "@/types/lobby"
@@ -14,6 +15,8 @@ import {
     englishDataset,
     englishRecommendedTransformers
 } from "obscenity"
+import { Account } from "@/types/account"
+import { ServerState, SocketData } from "@/types/state"
 
 
 const matcher = new RegExpMatcher({
@@ -34,6 +37,21 @@ function correctLobby(lobby: Lobby) {
     if (lobby.settings.turns <= 0) {
         lobby.settings.turns = 1
     }
+}
+
+function sendMessageToLobby(state: ServerState, lobbyCode: string, message: string, author: Account) {
+    emitToLobby(
+        state,
+        lobbyCode,
+        Packet.MessageSentPacket,
+        {
+            message: {
+                message: message,
+                timestamp: Math.floor(Date.now() / 1000),
+                author
+            }
+        }
+    )
 }
 
 const lobbyHandlers: Handlers = {
@@ -140,6 +158,8 @@ const lobbyHandlers: Handlers = {
         }
         correctLobby(state.lobbies[code])
 
+        sendMessageToLobby(state, code, "testing 123", data.account)
+
         broadcastLobbyUpdate(state, code)
     },
     2008: (socket, args, data, state) => { // KickUserPacket
@@ -172,6 +192,17 @@ const lobbyHandlers: Handlers = {
                 .filter((lobby) => lobby.settings.isPublic && !Object.keys(state.swaps).includes(lobby.code))
                 .sort((a, b) => b.accounts.length - a.accounts.length) }
         )
+    },
+    2010: (socket, args, data, state) => { // SendMessagePacket
+        if (matcher.hasMatch(args.message)) {
+            sendError(socket, "your message could not be sent")
+            return
+        }
+
+        if (!data.account) return
+        if (args.message.replaceAll(" ", "").length === 0) return
+
+        sendMessageToLobby(state, data.currentLobbyCode || "", args.message, data.account)
     }
 }
 
