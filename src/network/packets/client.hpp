@@ -163,16 +163,29 @@ class SendLevelPacket : public Packet {
 class BanUserPacket : public Packet {
     CR_PACKET(5002, BanUserPacket)
 
-    BanUserPacket(std::string reason, int user_id):
+    BanUserPacket(int account_id, std::string reason):
         reason(reason),
-        user_id(user_id) {}
+        account_id(account_id) {}
 
+    int account_id;
     std::string reason;
-    int user_id;
 
     CR_SERIALIZE(
-        CEREAL_NVP(reason),
-        CEREAL_NVP(user_id)
+        CEREAL_NVP(account_id),
+        CEREAL_NVP(reason)
+    )
+};
+
+class UnbanUserPacket : public Packet {
+    CR_PACKET(5006, UnbanUserPacket)
+
+    UnbanUserPacket(int account_id):
+        account_id(account_id) {}
+
+    int account_id;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(account_id)
     )
 };
 

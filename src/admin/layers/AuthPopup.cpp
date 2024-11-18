@@ -22,7 +22,6 @@ bool AuthPopup::setup() {
     this->setTitle("Admin Authorization");
 
     auto& nm = NetworkManager::get();
-    nm.connect(true);
 
     auto label = CCLabelBMFont::create(
         "Password",

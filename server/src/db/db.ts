@@ -45,12 +45,12 @@ export class DBState {
     // -1 = you are not logged in
     // 0  = you are not a moderator
     // 1  = user banned!
-    async banUser(state: ServerState, data: SocketData, user_id: number, reason: string) {
+    async banUser(state: ServerState, data: SocketData, account_id: number, reason: string) {
         if (!data.account) {
             return -1
         }
 
-        if (!(await this.getModeratorsIds()).includes(data.account.userID)) {
+        if (!(await this.getModeratorsIds()).includes(data.account.accountID)) {
             return 0 // error
         }
 
@@ -58,15 +58,57 @@ export class DBState {
 
         db.run(
             `
-            INSERT INTO banned_users (user_id, issued_by, reason)
+            INSERT INTO banned_users (account_id, issued_by, reason)
             VALUES (?, ?, ?)
             `,
-            user_id,
-            data.account.userID,
+            account_id,
+            data.account.accountID,
             reason
         )
 
         return 1 // success!
+    }
+
+    async unbanUser(account_id: number) {
+        const db = await this.openDB()
+
+        db.run(
+            `
+            DELETE FROM banned_users
+            WHERE account_id = ?
+            `,
+            account_id
+        )
+    }
+
+    async promoteUser(account_id: number) {
+        const password = randomBytes(10).toString("hex")
+
+        const db = await this.openDB()
+        await db.run(`
+            INSERT INTO moderators (account_id, passw)
+            VALUES (?, ?)
+            `,
+            account_id,
+            hashPsw(password)
+        )
+
+        return password
+    }
+
+    async demoteUser(account_id: number) {
+        if (!(await this.getModeratorsIds()).includes(account_id)) {
+            return "Could not demote someone who is already demoted."
+        }
+        const db = await this.openDB()
+        await db.run(
+            `
+            DELETE FROM moderators
+            WHERE account_id = ?
+            `,
+            account_id
+        )
+        return "Demoted sucessfully"
     }
 
     async hasAuthenticated(accountID: number) {
@@ -110,34 +152,13 @@ export class DBState {
         return token == acc_token
     }
 
-    async loginUser(data: SocketData) {
-        const users = await this.getUsers()
-        const db = await this.openDB()
-        if (users.findIndex(acc => acc.user_id === data.account?.userID) !== -1) {
-            await db.run(
-                `UPDATE users SET username = ? WHERE user_id = ?`,
-                data.account?.name,
-                data.account?.userID
-            )
-        } else {
-            await db.run(
-                `
-                INSERT INTO users (user_id, username)
-                VALUES (?, ?)
-                `,
-                data.account?.userID,
-                data.account?.name
-            )
-        }
-    }
-
     async authorizeUser(data: SocketData, password: string) {
-        if (!(await this.getModeratorsIds()).includes(data.account?.userID || 0)) {
+        if (!(await this.getModeratorsIds()).includes(data.account?.accountID || 0)) {
             return false
         }
 
         const db = await this.openDB()
-        const { passw: hashedPassw } = await db.get("SELECT passw FROM moderators WHERE user_id = ?", data.account?.userID)
+        const { passw: hashedPassw } = await db.get("SELECT passw FROM moderators WHERE account_id = ?", data.account?.accountID)
         data.is_authorized = hashPsw(password) === hashedPassw
 
         return data.is_authorized
@@ -150,6 +171,11 @@ export class DBState {
 
     async getModeratorsIds() {
         const db = await this.openDB()
-        return (await db.all("SELECT user_id FROM moderators")).map(val => val.user_id) as number[]
+        return (await db.all("SELECT account_id FROM moderators")).map(val => val.account_id) as number[]
+    }
+
+    async getBannedIds() {
+        const db = await this.openDB()
+        return (await db.all("SELECT account_id FROM banned_users")).map(val => val.account_id) as number[]
     }
 }

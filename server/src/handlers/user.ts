@@ -38,16 +38,16 @@ const userHandlers: Handlers = {
         log.info(`new connection! ${data.account.name} (ID: ${data.account.userID}, connection #${state.socketCount})`)
     },
     5002: async (socket, args, data, state) => { // BanUserPacket
-        if (!(await isModerator(state, data.account?.userID || 0))) {
+        if (!(await isModerator(state, data.account?.accountID || 0))) {
             sendError(socket, "you are not a moderator")
             return
         }
 
-        await state.dbState.banUser(state, data, args.user_id, args.reason)
+        await state.dbState.banUser(state, data, args.account_id, args.reason)
         sendPacket(socket, Packet.BannedUserPacket, {})
     },
     5003: async (socket, args, data, state) => { // AuthorizeUserPacket
-        if (!(await isModerator(state, data.account?.userID || 0))) {
+        if (!(await isModerator(state, data.account?.accountID || 0))) {
             sendError(socket, "you are not a moderator")
             return
         }
@@ -69,7 +69,15 @@ const userHandlers: Handlers = {
             socket,
             account: args.account
         })
-    }
+    },
+    5006: async (socket, args, data, state) => { // UnbanUserPacket
+        if (!(await isModerator(state, data.account?.accountID || 0))) {
+            sendError(socket, "you are not a moderator")
+            return
+        }
+
+        await state.dbState.unbanUser(args.account_id)
+    },
 }
 
 export default userHandlers

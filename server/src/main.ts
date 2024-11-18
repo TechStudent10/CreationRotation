@@ -7,7 +7,7 @@ import { default as express } from "express"
 
 import { Handlers } from "@/types/handlers"
 import { SocketData, LoginInfo, ServerState } from "./types/state"
-import { disconnectFromLobby, getLength, sendError } from "./utils"
+import { disconnectFromLobby, getLength, hashPsw, sendError } from "./utils"
 
 import pako from "pako"
 import log from "./logging"
@@ -19,6 +19,8 @@ import { AuthManager } from "./auth"
 const app = express()
 const httpServer = createServer(app)
 const wss = new WebSocket.Server({ server: httpServer })
+
+app.use(express.json())
 
 let handlers: Handlers = {}
 
@@ -35,9 +37,8 @@ let state: ServerState = {
     dbState
 }
 state.authManager = new AuthManager(state)
-// state.authManager.sendMessage(20284359, "dum dum", "Hi dood")
-dbState.hasAuthenticated(20284359).then(has => log.info(has))
 
+log.info(hashPsw("hello world"))
 
 const handlerFiles = ["lobby", "swap", "user"]
 
@@ -140,6 +141,29 @@ app.get("/stats", (req, res) => {
             Peak number of connected clients: <b>${state.peakSocketCount}</b>
         </p>
     `)
+})
+
+app.post("/promote", async (req, res) => {
+    if (req.body["password"] !== state.serverConfig.masterPassword) {
+        res.send("not authenticated")
+        return
+    }
+
+    if (req.body["account_id"]) {
+        const passw = await state.dbState.promoteUser(req.body["account_id"])
+        res.send(`password: ${passw}`)
+    } else {
+        res.send("no account_id found")
+    }
+})
+
+app.post("/demote", async (req, res) => {
+    if (req.body["password"] !== state.serverConfig.masterPassword) {
+        res.send("not authenticated")
+        return
+    }
+
+    res.send(await state.dbState.demoteUser(req.body["account_id"]))
 })
 
 const port = process.env.PORT || 3000

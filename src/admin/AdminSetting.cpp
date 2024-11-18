@@ -4,6 +4,9 @@
 #include <Geode/loader/SettingV3.hpp>
 #include <Geode/loader/Mod.hpp>
 
+#include <managers/AuthManager.hpp>
+#include <network/manager.hpp>
+
 #include "layers/AuthPopup.hpp"
 
 using namespace geode::prelude;
@@ -71,8 +74,13 @@ protected:
     }
 
     void onButton(CCObject*) {
-        // we can worry about this later
-        AuthPopup::create()->show();
+        auto& nm = NetworkManager::get();
+        nm.connect(true, []() {
+            auto& am = AuthManager::get();
+            am.login([]() {
+                AuthPopup::create()->show();
+            });
+        });
     }
 
     void onCommit() override {}

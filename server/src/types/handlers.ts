@@ -54,13 +54,15 @@ export type Handlers = {
     // LoginPacket
     5001?: (socket: WebSocket, args: LoginInfo, data: SocketData, state: ServerState) => void
     // BanUserPacket
-    5002?: (socket: WebSocket, args: { user_id: number, reason: string }, data: SocketData, state: ServerState) => void
+    5002?: (socket: WebSocket, args: { account_id: number, reason: string }, data: SocketData, state: ServerState) => void
     // AuthorizeUserPacket
     5003?: (socket: WebSocket, args: { password: string }, data: SocketData, state: ServerState) => void
     // RequestAuthorizationPacket
     5004?: (socket: WebSocket, args: { account_id: number }, data: SocketData, state: ServerState) => void 
     // VerifyAuthPacket
     5005?: (socket: WebSocket, args: { account: Account }, data: SocketData, state: ServerState) => void
+    // UnbanUserPacket
+    5006?: (socket: WebSocket, args: { account_id: number }, data: SocketData, state: ServerState) => void
 
     [key: number]: Function | undefined
 }

@@ -55,9 +55,16 @@ function sendMessageToLobby(state: ServerState, lobbyCode: string, message: stri
 }
 
 const lobbyHandlers: Handlers = {
-    2001: (socket, args, _, state) => { // CreateLobbyPacket (response: LobbyCreatedPacket)
+    2001: async (socket, args, data, state) => { // CreateLobbyPacket (response: LobbyCreatedPacket)
         if (matcher.hasMatch(args.settings.name) && args.settings.isPublic) {
             sendError(socket, "the lobby name cannot contain profane terminology. please pick a different name.")
+            return
+        }
+
+        if (!data.account) return
+
+        if ((await state.dbState.getBannedIds()).includes(data.account.accountID) && args.settings.isPublic) {
+            sendError(socket, "you have been restricted from Creation Rotation; you cannot create public lobbies")
             return
         }
 
@@ -71,7 +78,6 @@ const lobbyHandlers: Handlers = {
         state.kickedUsers[newLobby.code] = []
         state.lobbies[newLobby.code] = newLobby
 
-
         sendPacket(
             socket,
             Packet.LobbyCreatedPacket,
@@ -80,7 +86,7 @@ const lobbyHandlers: Handlers = {
             }
         )
     },
-    2002: (socket, args, data, state) => { // JoinLobbyPacket
+    2002: async (socket, args, data, state) => { // JoinLobbyPacket
         const { code } = args
         const { account } = data
         if (!account) {
@@ -97,6 +103,10 @@ const lobbyHandlers: Handlers = {
         }
         if (state.kickedUsers[code].includes(account.userID)) {
             sendError(socket, `you have been kicked from lobby <cy>"${state.lobbies[code].settings.name}"</c>. you cannot rejoin`)
+            return
+        }
+        if ((await state.dbState.getBannedIds()).includes(account.accountID) && state.lobbies[code].settings.isPublic) {
+            sendError(socket, "you have been restricted from Creation Rotation; you cannot join public lobbies")
             return
         }
         state.lobbies[code].accounts.push(account)
@@ -193,14 +203,20 @@ const lobbyHandlers: Handlers = {
                 .sort((a, b) => b.accounts.length - a.accounts.length) }
         )
     },
-    2010: (socket, args, data, state) => { // SendMessagePacket
+    2010: async (socket, args, data, state) => { // SendMessagePacket
         if (matcher.hasMatch(args.message)) {
-            sendError(socket, "your message could not be sent")
             return
         }
 
         if (!data.account) return
-        if (args.message.replaceAll(" ", "").length === 0) return
+        if (!data.currentLobbyCode) return
+
+        const lobby = state.lobbies[data.currentLobbyCode]
+
+        if ((await state.dbState.getBannedIds()).includes(data.account.accountID) && lobby.settings.isPublic) {
+            sendError(socket, "you have been restricted from public use of Creation Rotation; you cannot send messages in public lobbies")
+            return
+        }
 
         sendMessageToLobby(state, data.currentLobbyCode || "", args.message, data.account)
     }
