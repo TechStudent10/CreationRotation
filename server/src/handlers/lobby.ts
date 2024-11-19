@@ -78,6 +78,14 @@ const lobbyHandlers: Handlers = {
         state.kickedUsers[newLobby.code] = []
         state.lobbies[newLobby.code] = newLobby
 
+        setTimeout(() => {
+            if (state.swaps[newLobby.code]) return
+
+            Object.values(state.sockets[newLobby.code]).forEach(socket => {
+                socket.close(1000, "lobby timeout; swap hasn't been started in an hour")
+            })
+        }, 3_600_000) // 3_600_000 = one hour in milliseconds
+
         sendPacket(
             socket,
             Packet.LobbyCreatedPacket,
