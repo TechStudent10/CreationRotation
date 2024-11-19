@@ -38,8 +38,6 @@ let state: ServerState = {
 }
 state.authManager = new AuthManager(state)
 
-log.info(hashPsw("hello world"))
-
 const handlerFiles = ["lobby", "swap", "user"]
 
 handlerFiles.forEach(async (handlerName) => {

@@ -56,11 +56,14 @@ export class DBState {
 
         const db = await this.openDB()
 
-        const { account_id } = await db.get(`SELECT account_id FROM users WHERE username = ?`)
+        const response = await db.get(`SELECT account_id FROM users WHERE username LIKE ?`, username.toLowerCase())
 
-        if (!account_id) {
+        if (!response) {
+            log.info("response failed :(")
             return -2
         }
+
+        const { account_id } = response
 
         db.run(
             `
