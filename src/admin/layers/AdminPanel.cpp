@@ -16,30 +16,30 @@ AdminPanel* AdminPanel::create() {
 bool AdminPanel::setup() {
     this->setTitle("Administrator Panel");
 
-    auto accountIDInput = TextInput::create(100.f, "Account ID");
+    auto usernameInput = TextInput::create(100.f, "Username");
     auto reasonInput = TextInput::create(100.f, "Reason");
 
-    auto banSpr = ButtonSprite::create("Banish to the shadow realm!");
+    auto banSpr = ButtonSprite::create("Ban");
     banSpr->setScale(0.5f);
     auto banBtn = CCMenuItemExt::createSpriteExtra(
         banSpr,
-        [accountIDInput, reasonInput](CCObject*) {
+        [usernameInput, reasonInput](CCObject*) {
             auto& nm = NetworkManager::get();
             nm.send(BanUserPacket::create(
-                geode::utils::numFromString<int>(accountIDInput->getString()).unwrapOr(0),
+                usernameInput->getString(),
                 reasonInput->getString()
             ));
         }
     );
 
-    auto unbanSpr = ButtonSprite::create("ARISE!");
+    auto unbanSpr = ButtonSprite::create("Unban");
     unbanSpr->setScale(0.5f);
     auto unbanBtn = CCMenuItemExt::createSpriteExtra(
         unbanSpr,
-        [accountIDInput](CCObject*) {
+        [usernameInput](CCObject*) {
             auto& nm = NetworkManager::get();
             nm.send(UnbanUserPacket::create(
-                geode::utils::numFromString<int>(accountIDInput->getString()).unwrapOr(0)
+                geode::utils::numFromString<int>(usernameInput->getString()).unwrapOr(0)
             ));
         }
     );
@@ -47,10 +47,10 @@ bool AdminPanel::setup() {
     auto primaryNode = CCNode::create();
 
     primaryNode->setAnchorPoint({ 0.5f, 0.5f });
-    primaryNode->addChild(accountIDInput);
+    primaryNode->addChild(usernameInput);
     primaryNode->addChild(reasonInput);
 
-    primaryNode->setContentHeight(accountIDInput->getContentHeight() * 2.f);
+    primaryNode->setContentHeight(usernameInput->getContentHeight() * 2.f);
 
     primaryNode->setLayout(
         ColumnLayout::create()

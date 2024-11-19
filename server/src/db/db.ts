@@ -45,7 +45,7 @@ export class DBState {
     // -1 = you are not logged in
     // 0  = you are not a moderator
     // 1  = user banned!
-    async banUser(state: ServerState, data: SocketData, account_id: number, reason: string) {
+    async banUser(state: ServerState, data: SocketData, username: string, reason: string) {
         if (!data.account) {
             return -1
         }
@@ -55,6 +55,12 @@ export class DBState {
         }
 
         const db = await this.openDB()
+
+        const { account_id } = await db.get(`SELECT account_id FROM users WHERE username = ?`)
+
+        if (!account_id) {
+            return -2
+        }
 
         db.run(
             `

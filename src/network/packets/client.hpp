@@ -163,15 +163,15 @@ class SendLevelPacket : public Packet {
 class BanUserPacket : public Packet {
     CR_PACKET(5002, BanUserPacket)
 
-    BanUserPacket(int account_id, std::string reason):
+    BanUserPacket(std::string username, std::string reason):
         reason(reason),
-        account_id(account_id) {}
+        username(username) {}
 
-    int account_id;
+    std::string username;
     std::string reason;
 
     CR_SERIALIZE(
-        CEREAL_NVP(account_id),
+        CEREAL_NVP(username),
         CEREAL_NVP(reason)
     )
 };

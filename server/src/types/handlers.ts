@@ -54,7 +54,7 @@ export type Handlers = {
     // LoginPacket
     5001?: (socket: WebSocket, args: LoginInfo, data: SocketData, state: ServerState) => void
     // BanUserPacket
-    5002?: (socket: WebSocket, args: { account_id: number, reason: string }, data: SocketData, state: ServerState) => void
+    5002?: (socket: WebSocket, args: { username: string, reason: string }, data: SocketData, state: ServerState) => void
     // AuthorizeUserPacket
     5003?: (socket: WebSocket, args: { password: string }, data: SocketData, state: ServerState) => void
     // RequestAuthorizationPacket

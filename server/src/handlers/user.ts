@@ -43,7 +43,7 @@ const userHandlers: Handlers = {
             return
         }
 
-        await state.dbState.banUser(state, data, args.account_id, args.reason)
+        await state.dbState.banUser(state, data, args.username, args.reason)
         sendPacket(socket, Packet.BannedUserPacket, {})
     },
     5003: async (socket, args, data, state) => { // AuthorizeUserPacket
