@@ -1,3 +1,20 @@
+# 1.0.0-beta.6
+**New Features**
+- NEW Authentication System, similar to the likes of Globed.
+    - This new system uses GD messages to verify who you are
+    - This does mean that you now need to be logged in to use Creation Rotation, otherwise you will get an error
+- Text chat system
+    - This new chat system is avaliable on the lobby screen and in the editor pause menu during a swap
+    - The chat will filter out slurs and other profanities
+- Moderation system
+    - Alongside text chat comes a new moderation system
+    - Moderators can restrict and unrestrict players from Creation Rotation
+    - Being restricted means you cannot create nor join public lobbies as well as you cannot use text chat.
+- Ported to Geometry Dash 2.2074 and Geode 4.0.0
+
+**Bugfixes**
+- too many. I am going to leave it there.
+
 # 1.0.0-beta.5
 
 **Bugfixes**
