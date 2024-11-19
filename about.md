@@ -23,7 +23,7 @@ Once the swap starts, after the amount of time inputted has passed, your level w
 
 ### Credits
 
-- [Jay/Dasshu](https://twitter.com/DasshuGames) for their amazing work creating the logo and all assets for this mod. Wouldn't have been possible without you
+- [Jay/Dasshu](https://dasshu.dev) for their amazing work creating the logo and all assets for this mod. Wouldn't have been possible without you
 - [Prevter](https://github.com/Prevter) for hosting the main server instance for Creation Rotation. Again, I'm not sure if I would've been able to release this without your help
 
 #### Testers

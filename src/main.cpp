@@ -78,6 +78,15 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 	}
 
 	void onMyButton(CCObject*) {
+		if (cr::utils::createAccountType().accountID == 0) {
+			FLAlertLayer::create(
+				"Creation Rotation",
+				"Creation Rotation requires you to be logged in for verification purposes. Please sign in to a GD account.",
+				"OK"
+			)->show();
+			return;
+		}
+
 		auto& sm = SwapManager::get();
 		if (sm.currentLobbyCode == "") {
 			auto& nm = NetworkManager::get();
