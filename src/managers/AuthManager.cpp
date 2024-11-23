@@ -2,6 +2,36 @@
 
 #include <utils.hpp>
 
+AuthManager::AuthManager() {
+    auto& nm = NetworkManager::get();
+
+    nm.on<InvalidTokenPacket>([this](InvalidTokenPacket*) {
+        geode::createQuickPopup(
+            "Creation Rotation",
+            "The server received an <cr>invalid token</c>. Would you like to reauthenticate with the server?",
+            "Cancel", "Yes",
+            [this](auto, bool btn2) {
+                if (!btn2) return;
+
+                this->beginAuthorization([]() {});
+            }
+        );
+    });
+
+    nm.on<LoginNotReceivedPacket>([this](LoginNotReceivedPacket*) {
+        geode::createQuickPopup(
+            "Creation Rotation",
+            "The server <cr>did not receive</c> login information. Would you like to send it now?",
+            "Cancel", "Yes",
+            [this](auto, bool btn2) {
+                if (!btn2) return;
+
+                this->login();
+            }
+        );
+    });
+}
+
 void AuthManager::beginAuthorization(std::function<void()> callback) {
     auto& nm = NetworkManager::get();
     nm.send(

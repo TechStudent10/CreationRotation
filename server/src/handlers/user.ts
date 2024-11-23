@@ -23,7 +23,7 @@ const userHandlers: Handlers = {
         }
 
         if (!(await state.dbState.isValidToken(args.account.accountID, args.token))) {
-            socket.close(1000, "invalid token recieved")
+            sendPacket(socket, Packet.InvalidTokenPacket, {})
             return
         }
 

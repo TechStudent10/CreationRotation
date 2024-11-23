@@ -7,7 +7,7 @@ import { default as express } from "express"
 
 import { Handlers } from "@/types/handlers"
 import { SocketData, LoginInfo, ServerState } from "./types/state"
-import { disconnectFromLobby, getLength, hashPsw, sendError } from "./utils"
+import { disconnectFromLobby, getLength, hashPsw, sendError, sendPacket } from "./utils"
 
 import pako from "pako"
 import log from "./logging"
@@ -15,6 +15,7 @@ import { DBState } from "./db/db"
 import { ErrorHandler } from "./error_handler"
 import getConfig from "./config"
 import { AuthManager } from "./auth"
+import { Packet } from "./types/packet"
 
 const app = express()
 const httpServer = createServer(app)
@@ -50,6 +51,8 @@ handlerFiles.forEach(async (handlerName) => {
         log.error(`unable to add handlers for file "${handlerName}". did you remember to use \`export default\`?`)
     }
 })
+
+const unauthorizedPacketRange = new Array<number>(1000).map((val) => val + 5000)
 
 wss.on("connection", (socket) => {
     let data: SocketData = {
@@ -89,22 +92,15 @@ wss.on("connection", (socket) => {
             }
         }
 
-        // handle the login packet first, it's special
-        if (packetId >= 5000) {
+        // handle user packets if we're not authorized
+        if (unauthorizedPacketRange.includes(packetId)) {
             doTheThing()
-
-            const { packet: packetArgs } = args as { packet: LoginInfo }
-            
-            
 
             return
         }
 
         if (!data.loggedIn) {
-            socket.close(
-                1000,
-                "did not recieve login data; cannot proceed"
-            )
+            sendPacket(socket, Packet.LoginNotReceivedPacket, {})
             return
         }
 

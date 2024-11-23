@@ -17,7 +17,9 @@ export enum Packet {
     BannedUserPacket = "4002",
     AuthorizedUserPacket = "4003",
     RecieveAuthCodePacket = "4004",
-    RecieveTokenPacket = "4005"
+    RecieveTokenPacket = "4005",
+    InvalidTokenPacket = "4006",
+    LoginNotReceivedPacket = "4007"
 }
 
 export interface ServerToClientEvents {
@@ -37,4 +39,6 @@ export interface ServerToClientEvents {
     "4003": {} // AuthorizedUserPacket
     "4004": { botAccID: number, code: string } // RecieveAuthCodePacket
     "4005": { token: string } // RecieveTokenPacket
+    "4006": {} // InvalidTokenPacket
+    "4007": {} // LoginNotReceivedPacket
 }

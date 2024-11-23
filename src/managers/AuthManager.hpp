@@ -20,7 +20,7 @@ public:
     void uploadMessageFinished(int);
     void uploadMessageFailed(int);
 protected:
-    AuthManager() {}
+    AuthManager();
 
     std::string getToken() {
         return Mod::get()->getSavedValue<std::string>("token", "");

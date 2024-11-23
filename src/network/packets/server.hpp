@@ -206,3 +206,23 @@ class RecieveTokenPacket : public Packet {
         CEREAL_NVP(token)
     )
 };
+
+class InvalidTokenPacket : public Packet {
+    CR_PACKET(4006, InvalidTokenPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(
+        dummy
+    )
+};
+
+class LoginNotReceivedPacket : public Packet {
+    CR_PACKET(4007, LoginNotReceivedPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(
+        dummy
+    )
+};

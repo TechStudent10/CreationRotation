@@ -80,6 +80,9 @@ const lobbyHandlers: Handlers = {
 
         setTimeout(() => {
             if (state.swaps[newLobby.code]) return
+            // the line below not existing has spammed
+            // server errors :thumbs_up:
+            if (!state.sockets[newLobby.code]) return
 
             Object.values(state.sockets[newLobby.code]).forEach(socket => {
                 socket.close(1000, "lobby timeout; swap hasn't been started in an hour")
