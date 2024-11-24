@@ -1,5 +1,5 @@
 {
-	"geode": "4.0.0",
+	"geode": "4.0.1",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
@@ -8,7 +8,7 @@
 	},
 	"id": "techstudent10.creation_rotation",
 	"name": "Creation Rotation",
-	"version": "v1.0.0-beta.6",
+	"version": "v1.0.0-beta.7",
 	"developer": "TechStudent10",
 	"description": "Wulzy's Creation Rotation as a mod",
 	"resources": {
@@ -40,7 +40,7 @@
 		"server-url": {
 			"name": "Server URL",
 			"type": "string",
-			"default": "wss://creationrotation.prevter.me",
+			"default": "wss://creationrotation.underscored.me",
 			"description": "The Creation Rotation server URL",
 			"filter": "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM.:/"
 		},

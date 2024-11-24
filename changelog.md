@@ -1,3 +1,11 @@
+# 1.0.0-beta.7
+**New Features**
+- Added code that automatically changes the server URL to the brand new one
+
+**Bugfixes**
+- Fixed the "login data not received" and "invalid token received" errors with new confirmation dialogs
+- Other misc. bugfixes
+
 # 1.0.0-beta.6
 **New Features**
 - NEW Authentication System, similar to the likes of Globed.

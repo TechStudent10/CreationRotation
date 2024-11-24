@@ -149,14 +149,15 @@ export class DBState {
 
         const db = await this.openDB()
 
-        const { token: acc_token } = await db.get(
+        const response = await db.get(
             `
             SELECT token FROM users WHERE account_id = ?
             `,
             accountID
         )
+        if (!response) return false
 
-        log.info(acc_token + " " + token)
+        const { token: acc_token } = response
 
         return token == acc_token
     }
@@ -169,6 +170,10 @@ export class DBState {
         const db = await this.openDB()
         const { passw: hashedPassw } = await db.get("SELECT passw FROM moderators WHERE account_id = ?", data.account?.accountID)
         data.is_authorized = hashPsw(password) === hashedPassw
+
+        if (data.is_authorized) {
+            log.log("ADMIN", `user ${data.account?.name} has logged in to the admin panel`)
+        }
 
         return data.is_authorized
     }

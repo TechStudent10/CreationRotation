@@ -18,4 +18,4 @@ geode build
 ### Credits
 
 - [Jay/Dasshu](https://dasshu.dev) for their amazing work creating the logo and all assets for this mod. Wouldn't have been possible without you
-- [Prevter](https://github.com/Prevter) for hosting the main server instance for Creation Rotation. Again, I'm not sure if I would've been able to release this without your help
+- [Prevter](https://github.com/Prevter) for originally hosting the main server instance for Creation Rotation. Again, I'm not sure if I would've been able to release this without your help

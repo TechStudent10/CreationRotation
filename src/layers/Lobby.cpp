@@ -274,10 +274,10 @@ LobbyLayer::~LobbyLayer() {
 void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
     isOwner = GameManager::get()->m_playerUserID == info.settings.owner.userID;
 
-    loadingCircle = LoadingCircle::create();
-    loadingCircle->setParentLayer(this);
-    loadingCircle->setFade(true);
-    loadingCircle->show();
+    // loadingCircle = LoadingCircle::create();
+    // loadingCircle->setParentLayer(this);
+    // loadingCircle->setFade(true);
+    // loadingCircle->show();
 
     auto size = CCDirector::sharedDirector()->getWinSize();
     auto listWidth = size.width / 1.5f;
@@ -357,7 +357,7 @@ void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
     settingsBtn->setVisible(isOwner);
     startBtn->setVisible(isOwner);
 
-    loadingCircle->fadeAndRemove();
+    // loadingCircle->fadeAndRemove();
 }
 
 void LobbyLayer::onStart(CCObject* sender) {

@@ -52,7 +52,7 @@ handlerFiles.forEach(async (handlerName) => {
     }
 })
 
-const unauthorizedPacketRange = new Array<number>(1000).map((val) => val + 5000)
+const unauthorizedPacketRange = [...Array(1000).keys()].map((val) => val + 5000)
 
 wss.on("connection", (socket) => {
     let data: SocketData = {

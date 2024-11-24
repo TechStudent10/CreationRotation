@@ -78,6 +78,20 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 	}
 
 	void onMyButton(CCObject*) {
+		if (Mod::get()->getSettingValue<std::string>("server-url").find("prevter.me") != std::string::npos) {
+			if (!Mod::get()->setSavedValue("seen-prevter-notice", true)) {
+				Mod::get()->setSettingValue<std::string>("server-url", "wss://creationrotation.underscored.me");
+
+				FLAlertLayer::create(
+					"Creation Rotation",
+					"We recently moved servers from <cy>prevter.me</c> to <cy>underscored.me</c>. The old server will not work, and as such the setting value has changed accordingly.",
+					"OK"
+				)->show();
+
+				return;
+			}
+		}
+
 		if (cr::utils::createAccountType().accountID == 0) {
 			FLAlertLayer::create(
 				"Creation Rotation",
