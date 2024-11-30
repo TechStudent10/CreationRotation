@@ -4,7 +4,6 @@
 #include <Geode/loader/SettingV3.hpp>
 #include <Geode/loader/Mod.hpp>
 
-#include <managers/AuthManager.hpp>
 #include <network/manager.hpp>
 
 #include "layers/AuthPopup.hpp"
@@ -76,10 +75,7 @@ protected:
     void onButton(CCObject*) {
         auto& nm = NetworkManager::get();
         nm.connect(true, []() {
-            auto& am = AuthManager::get();
-            am.login([]() {
-                AuthPopup::create()->show();
-            });
+            AuthPopup::create()->show();
         });
     }
 

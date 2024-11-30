@@ -269,6 +269,7 @@ void LobbyLayer::unregisterListeners() {
 
 LobbyLayer::~LobbyLayer() {
     unregisterListeners();
+    if (mainLayer) mainLayer->release();
 }
 
 void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
@@ -283,6 +284,7 @@ void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
     auto listWidth = size.width / 1.5f;
 
     if (!mainLayer) return;
+    mainLayer->retain();
 
     if (isFirstRefresh) {
         titleLabel = CCLabelBMFont::create(

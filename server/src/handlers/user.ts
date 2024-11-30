@@ -35,6 +35,8 @@ const userHandlers: Handlers = {
         data.account = args.account
         data.loggedIn = true
 
+        sendPacket(socket, Packet.LoggedInPacket, {})
+
         log.info(`new connection! ${data.account.name} (ID: ${data.account.userID}, connection #${state.socketCount})`)
     },
     5002: async (socket, args, data, state) => { // BanUserPacket

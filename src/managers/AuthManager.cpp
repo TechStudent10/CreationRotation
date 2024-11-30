@@ -1,4 +1,5 @@
 #include "AuthManager.hpp"
+#include "network/packets/server.hpp"
 
 #include <utils.hpp>
 
@@ -64,7 +65,7 @@ void AuthManager::login(std::function<void()> callback) {
     nm.send(
         LoginPacket::create(this->getToken())
     );
-    Loader::get()->queueInMainThread([callback]() {
+    nm.on<LoggedInPacket>([callback](LoggedInPacket*) {
         callback();
     });
 }

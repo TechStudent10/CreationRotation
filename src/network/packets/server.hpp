@@ -226,3 +226,13 @@ class LoginNotReceivedPacket : public Packet {
         dummy
     )
 };
+
+class LoggedInPacket : public Packet {
+    CR_PACKET(4008, LoggedInPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(
+        dummy
+    )
+};

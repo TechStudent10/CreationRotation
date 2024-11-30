@@ -164,7 +164,7 @@ bool LobbySelectPopup::setup() {
 
 void LobbySelectPopup::refresh(bool isFirstTime) {
     auto& nm = NetworkManager::get();
-    nm.addToQueue(GetPublicLobbiesPacket::create());
+    nm.send(GetPublicLobbiesPacket::create());
     nm.on<RecievePublicLobbiesPacket>([this, isFirstTime](RecievePublicLobbiesPacket* packet) {
         if (!CCScene::get()->getChildByID("select-popup"_spr)) return;
 

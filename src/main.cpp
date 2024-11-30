@@ -36,6 +36,16 @@ $on_mod(Loaded) {
 };
 #endif
 
+$on_mod(Loaded) {
+	auto& nm = NetworkManager::get();
+	nm.middleware = [](std::function<void()> cb) {
+		auto& am = AuthManager::get();
+		am.login([cb]() {
+			cb();
+		});
+	};
+};
+
 class $modify(CRBrowserLayer, LevelBrowserLayer) {
 	bool init(GJSearchObject* searchObject) {
 		if (!LevelBrowserLayer::init(searchObject)) {
@@ -105,10 +115,7 @@ class $modify(CRBrowserLayer, LevelBrowserLayer) {
 		if (sm.currentLobbyCode == "") {
 			auto& nm = NetworkManager::get();
 			nm.connect(true, []() {
-				auto& am = AuthManager::get();
-				am.login([]() {
-					LobbySelectPopup::create()->show();
-				});
+				LobbySelectPopup::create()->show();
 			});
 		} else {
 			auto layer = LobbyLayer::create(sm.currentLobbyCode);

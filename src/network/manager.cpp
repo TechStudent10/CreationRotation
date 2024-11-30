@@ -45,33 +45,37 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
         } else if (msg->type == ix::WebSocketMessageType::Open) {
             log::debug("connection success!");
 
-            // register error packet
-            this->on<ErrorPacket>([](ErrorPacket* packet) {
-                FLAlertLayer::create(
-                    "CR Error",
-                    fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet->error).c_str(),
-                    "OK"
-                )->show();
+            // call middleware (this should run the provided cb)
+            middleware([this, callback]() {
+                // register error packet
+                this->on<ErrorPacket>([](ErrorPacket* packet) {
+                    FLAlertLayer::create(
+                        "CR Error",
+                        fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet->error).c_str(),
+                        "OK"
+                    )->show();
+                });
+
+                // call the callback
+                callback();
+
+                // send all packets in queue
+                for (auto packetFn : packetQueue) {
+                    packetFn();
+                }
+                // clear the queue
+                packetQueue.clear();
+
+                this->showDisconnectPopup = true;
+                Loader::get()->queueInMainThread([]() {
+                    Notification::create(
+                        "Connection sucessful!",
+                        NotificationIcon::Success,
+                        1.5f
+                    )->show();
+                });
             });
 
-            // call the callback
-            callback();
-
-            // send all packets in queue
-            for (auto packetFn : packetQueue) {
-                packetFn();
-            }
-            // clear the queue
-            packetQueue.clear();
-
-            this->showDisconnectPopup = true;
-            Loader::get()->queueInMainThread([]() {
-                Notification::create(
-                    "Connection sucessful!",
-                    NotificationIcon::Success,
-                    1.5f
-                )->show();
-            });
             return;
         } else if (msg->type == ix::WebSocketMessageType::Close) {
             log::debug("connection closed");

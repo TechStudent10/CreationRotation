@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #undef _WINSOCKAPI_ 
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXWebSocket.h>
@@ -12,6 +13,7 @@
 using namespace geode::prelude;
 
 using DisconnectCallback = std::function<void(std::string)>;
+using MiddlewareCb = std::function<void(std::function<void()> callback)>;
 
 class NetworkManager {
 public:
@@ -34,8 +36,9 @@ public:
     }
 
     bool showDisconnectPopup = true;
-
     bool isConnected = false;
+
+    MiddlewareCb middleware;
 
     void connect(bool shouldReconnect = true, std::function<void()> callback = []() {});
     void disconnect();
@@ -77,7 +80,7 @@ public:
     }
 
     template<typename T>
-    inline void send(T* packet) {
+    inline void send(T* packet, std::function<void()> callback = nullptr) {
         if (!this->isConnected) {
             return;
         }
@@ -106,7 +109,14 @@ public:
             std::string(std::string_view(
                 reinterpret_cast<const char*>(compressedData),
                 compressedSize
-            ))
+            )), [callback](int current, int total) {
+                if (current + 1 == total && callback) {
+                    Loader::get()->queueInMainThread([callback]() {
+                        callback();
+                    });
+                }
+                return true;
+            }
         );
     }
 protected:
