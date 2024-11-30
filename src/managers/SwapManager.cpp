@@ -62,7 +62,7 @@ void SwapManager::getLobbyAccounts(std::function<void(std::vector<Account>)> cal
 
     auto& nm = NetworkManager::get();
     nm.send(GetAccountsPacket::create(this->currentLobbyCode));
-    nm.on<RecieveAccountsPacket>([this, callback](RecieveAccountsPacket* accounts) {
+    nm.on<ReceiveAccountsPacket>([this, callback](ReceiveAccountsPacket* accounts) {
         callback(accounts->accounts);
     });
 }
@@ -72,7 +72,7 @@ void SwapManager::getLobbyInfo(std::function<void(LobbyInfo)> callback) {
 
     auto& nm = NetworkManager::get();
     nm.send(GetLobbyInfoPacket::create(this->currentLobbyCode));
-    nm.on<RecieveLobbyInfoPacket>([this, callback](RecieveLobbyInfoPacket* packet) {
+    nm.on<ReceiveLobbyInfoPacket>([this, callback](ReceiveLobbyInfoPacket* packet) {
         callback(packet->info);
     });
 }
@@ -170,7 +170,7 @@ void SwapManager::registerListeners() {
             )
         );
     });
-    nm.on<RecieveSwappedLevelPacket>([this](RecieveSwappedLevelPacket* packet) {
+    nm.on<ReceiveSwappedLevelPacket>([this](ReceiveSwappedLevelPacket* packet) {
         if (packet->levels.size() < swapIdx) {
             FLAlertLayer::create(
                 "Creation Rotation",

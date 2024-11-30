@@ -72,7 +72,7 @@ wss.on("connection", (socket) => {
 
         const args = JSON.parse(inflatedData.toString())
         if (!args || typeof args !== "object") {
-            log.packet("recieved invalid packet string")
+            log.packet("received invalid packet string")
             return
         }   
         const packetId = args["packet_id"]

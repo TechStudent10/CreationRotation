@@ -54,7 +54,7 @@
 			"name": "Delete Levels when done",
 			"type": "bool",
 			"default": true,
-			"description": "Delete levels when you're done with them. This does not include the last turn when you recieve your level back. Useful if you wanna keep the older versions of levels."
+			"description": "Delete levels when you're done with them. This does not include the last turn when you receive your level back. Useful if you wanna keep the older versions of levels."
 		},
 		"admin-button": {
 			"name": "Admin",

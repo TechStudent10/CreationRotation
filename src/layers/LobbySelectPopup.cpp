@@ -165,7 +165,7 @@ bool LobbySelectPopup::setup() {
 void LobbySelectPopup::refresh(bool isFirstTime) {
     auto& nm = NetworkManager::get();
     nm.send(GetPublicLobbiesPacket::create());
-    nm.on<RecievePublicLobbiesPacket>([this, isFirstTime](RecievePublicLobbiesPacket* packet) {
+    nm.on<ReceivePublicLobbiesPacket>([this, isFirstTime](ReceivePublicLobbiesPacket* packet) {
         if (!CCScene::get()->getChildByID("select-popup"_spr)) return;
 
         if (!isFirstTime) lobbyList->removeFromParent();

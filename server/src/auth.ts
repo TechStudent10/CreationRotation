@@ -99,7 +99,7 @@ export class AuthManager {
 
                 if (message.title === this.state.verifyCodes[acc.account.accountID]) {
                     const token = await this.state.dbState.registerUser(acc.account)
-                    sendPacket(acc.socket, Packet.RecieveTokenPacket, { token })
+                    sendPacket(acc.socket, Packet.ReceiveTokenPacket, { token })
                     outdatedMessages.push(message.messageID)
                 }
             })

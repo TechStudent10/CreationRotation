@@ -37,7 +37,7 @@ class JoinLobbyPacket : public Packet {
     )
 };
 
-// response: RecieveAccountsPacket
+// response: ReceiveAccountsPacket
 class GetAccountsPacket : public Packet {
     CR_PACKET(2003, GetAccountsPacket)
 
@@ -51,7 +51,7 @@ class GetAccountsPacket : public Packet {
     )
 };
 
-// response: RecieveLobbyInfoPacket
+// response: ReceiveLobbyInfoPacket
 class GetLobbyInfoPacket : public Packet {
     CR_PACKET(2004, GetLobbyInfoPacket)
 
@@ -102,7 +102,7 @@ class KickUserPacket : public Packet {
     )
 };
 
-// response: RecievePublicLobbiesPacket
+// response: ReceivePublicLobbiesPacket
 class GetPublicLobbiesPacket : public Packet {
     CR_PACKET(2009, GetPublicLobbiesPacket)
 

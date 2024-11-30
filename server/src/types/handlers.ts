@@ -17,11 +17,11 @@ export type Handlers = {
         code: string,
         account: Account
     }, data: SocketData, state: ServerState) => void
-    // GetAccountsPacket (response: RecieveAccountsPacket)
+    // GetAccountsPacket (response: ReceiveAccountsPacket)
     2003?: (socket: WebSocket, args: {
         code: string
     }, data: SocketData, state: ServerState) => void
-    // GetLobbyInfoPacket (response: RecieveLobbyInfoPacket)
+    // GetLobbyInfoPacket (response: ReceiveLobbyInfoPacket)
     2004?: (socket: WebSocket, args: {
         code: string
     }, data: SocketData, state: ServerState) => void
@@ -41,7 +41,7 @@ export type Handlers = {
     2007?: (socket: WebSocket, args: {}, data: SocketData, state: ServerState) => void
     // KickUserPacket
     2008?: (socket: WebSocket, args: { userID: number }, data: SocketData, state: ServerState) => void
-    // GetPublicLobbiesPacket (response: RecievePublicLobbiesPacket)
+    // GetPublicLobbiesPacket (response: ReceivePublicLobbiesPacket)
     2009?: (socket: WebSocket, args: {}, data: SocketData, state: ServerState) => void
     // SendMessagePacket
     2010?: (socket: WebSocket, args: { message: string }, data: SocketData, state: ServerState) => void

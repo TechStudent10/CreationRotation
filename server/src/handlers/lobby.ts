@@ -129,23 +129,23 @@ const lobbyHandlers: Handlers = {
 
         broadcastLobbyUpdate(state, code)
     },
-    2003: (socket, _, data, state) => { // GetAccountsPacket (response: RecieveAccountsPacket)
+    2003: (socket, _, data, state) => { // GetAccountsPacket (response: ReceiveAccountsPacket)
         const { currentLobbyCode: code } = data
         if (!code) {
             sendError(socket, "you are not in a lobby")
             return
         }
         if (!Object.keys(state.lobbies).includes(code)) return
-        sendPacket(socket, Packet.RecieveAccountsPacket, { accounts: state.lobbies[code].accounts })
+        sendPacket(socket, Packet.ReceiveAccountsPacket, { accounts: state.lobbies[code].accounts })
     },
-    2004: (socket, _, data, state) => { // GetLobbyInfoPacket (response: RecieveLobbyInfoPacket)
+    2004: (socket, _, data, state) => { // GetLobbyInfoPacket (response: ReceiveLobbyInfoPacket)
         const { currentLobbyCode: code } = data
         if (!code) {
             sendError(socket, "you are not in a lobby")
             return
         }
         if (!Object.keys(state.lobbies).includes(code)) return
-        sendPacket(socket, Packet.RecieveLobbyInfoPacket, { info: state.lobbies[code] })
+        sendPacket(socket, Packet.ReceiveLobbyInfoPacket, { info: state.lobbies[code] })
     },
     2005: (socket) => { // DisconnectFromLobbyPacket
         socket.close()
@@ -190,7 +190,7 @@ const lobbyHandlers: Handlers = {
         if (!lobbyCode || !account) return
         
         if (!Object.keys(state.lobbies).includes(lobbyCode)) {
-            sendError(socket, "invalid lobby code recieved")
+            sendError(socket, "invalid lobby code received")
             return
         }
         if (state.lobbies[lobbyCode].settings.owner.userID != account.userID) {
@@ -205,10 +205,10 @@ const lobbyHandlers: Handlers = {
         state.sockets[lobbyCode][userID].close(1000, "kicked from lobby by owner; you can no longer rejoin")
         state.kickedUsers[lobbyCode].push(userID)
     },
-    2009: (socket, _, __, state) => { // GetPublicLobbiesPacket (response: RecievePublicLobbiesPacket)
+    2009: (socket, _, __, state) => { // GetPublicLobbiesPacket (response: ReceivePublicLobbiesPacket)
         sendPacket(
             socket,
-            Packet.RecievePublicLobbiesPacket,
+            Packet.ReceivePublicLobbiesPacket,
             { lobbies: Object.values(state.lobbies)
                 .filter((lobby) => lobby.settings.isPublic && !Object.keys(state.swaps).includes(lobby.code))
                 .sort((a, b) => b.accounts.length - a.accounts.length) }

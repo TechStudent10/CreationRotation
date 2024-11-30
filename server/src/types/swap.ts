@@ -83,7 +83,7 @@ export class Swap {
         this.currentlySwapping = false
 
         if (!this.isSwapEnding) {
-            emitToLobby(this.serverState, this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels: this.levels })
+            emitToLobby(this.serverState, this.lobbyCode, Packet.ReceiveSwappedLevelPacket, { levels: this.levels })
 
             this.levels = []
 
@@ -97,7 +97,7 @@ export class Swap {
         } else {
             this.swapEnded = true
             this.levels = offsetArray(this.levels, this.totalTurns - this.currentTurn)
-            emitToLobby(this.serverState, this.lobbyCode, Packet.RecieveSwappedLevelPacket, { levels: this.levels })
+            emitToLobby(this.serverState, this.lobbyCode, Packet.ReceiveSwappedLevelPacket, { levels: this.levels })
             Object.values(this.serverState.sockets[this.lobbyCode]).forEach(socket => {
                 socket.close(1000, this.closeReason)
             })

@@ -19,10 +19,10 @@ class LobbyCreatedPacket : public Packet {
     )
 };
 
-class RecieveAccountsPacket : public Packet {
-    CR_PACKET(1002, RecieveAccountsPacket)
+class ReceiveAccountsPacket : public Packet {
+    CR_PACKET(1002, ReceiveAccountsPacket)
 
-    RecieveAccountsPacket(std::vector<Account> accounts):
+    ReceiveAccountsPacket(std::vector<Account> accounts):
         accounts(accounts) {}
 
     std::vector<Account> accounts;
@@ -32,10 +32,10 @@ class RecieveAccountsPacket : public Packet {
     )
 };
 
-class RecieveLobbyInfoPacket : public Packet {
-    CR_PACKET(1003, RecieveLobbyInfoPacket)
+class ReceiveLobbyInfoPacket : public Packet {
+    CR_PACKET(1003, ReceiveLobbyInfoPacket)
 
-    RecieveLobbyInfoPacket(LobbyInfo info):
+    ReceiveLobbyInfoPacket(LobbyInfo info):
         info(info) {}
 
     LobbyInfo info;
@@ -66,10 +66,10 @@ class JoinedLobbyPacket : public Packet {
     CR_SERIALIZE(dummy)
 };
 
-class RecievePublicLobbiesPacket : public Packet {
-    CR_PACKET(1008, RecievePublicLobbiesPacket)
+class ReceivePublicLobbiesPacket : public Packet {
+    CR_PACKET(1008, ReceivePublicLobbiesPacket)
 
-    RecievePublicLobbiesPacket(std::vector<LobbyInfo> lobbies) :
+    ReceivePublicLobbiesPacket(std::vector<LobbyInfo> lobbies) :
         lobbies(lobbies) {}
 
     std::vector<LobbyInfo> lobbies;
@@ -127,10 +127,10 @@ class TimeToSwapPacket : public Packet {
     CR_SERIALIZE(dummy)
 };
 
-class RecieveSwappedLevelPacket : public Packet {
-    CR_PACKET(3002, RecieveSwappedLevelPacket)
+class ReceiveSwappedLevelPacket : public Packet {
+    CR_PACKET(3002, ReceiveSwappedLevelPacket)
 
-    RecieveSwappedLevelPacket(std::vector<std::string> levels):
+    ReceiveSwappedLevelPacket(std::vector<std::string> levels):
         levels(levels) {}
 
     std::vector<std::string> levels;
@@ -179,10 +179,10 @@ class AuthorizedUserPacket : public Packet {
     CR_SERIALIZE(dummy)
 };
 
-class RecieveAuthCodePacket : public Packet {
-    CR_PACKET(4004, RecieveAuthCodePacket)
+class ReceiveAuthCodePacket : public Packet {
+    CR_PACKET(4004, ReceiveAuthCodePacket)
 
-    RecieveAuthCodePacket(std::string code, int botAccID):
+    ReceiveAuthCodePacket(std::string code, int botAccID):
         code(code), botAccID(botAccID) {}
 
     std::string code;
@@ -194,10 +194,10 @@ class RecieveAuthCodePacket : public Packet {
     )
 };
 
-class RecieveTokenPacket : public Packet {
-    CR_PACKET(4005, RecieveTokenPacket)
+class ReceiveTokenPacket : public Packet {
+    CR_PACKET(4005, ReceiveTokenPacket)
 
-    RecieveTokenPacket(std::string token):
+    ReceiveTokenPacket(std::string token):
         token(token) {}
 
     std::string token;

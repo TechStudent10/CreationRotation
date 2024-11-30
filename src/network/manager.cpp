@@ -120,7 +120,7 @@ void NetworkManager::onMessage(const ix::WebSocketMessagePtr& msg) {
 
     auto packetIdIdx = strMsg.find("|");
     if (packetIdIdx == std::string::npos) {
-        log::error("invalid packet recieved");
+        log::error("invalid packet received");
         return;
     }
 

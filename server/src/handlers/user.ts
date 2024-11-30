@@ -65,7 +65,7 @@ const userHandlers: Handlers = {
     5004: async (socket, args, data, state) => { // RequestAuthorizationPacket
         const token = randomBytes(10).toString('hex')
         state.verifyCodes[args.account_id] = token
-        sendPacket(socket, Packet.RecieveAuthCodePacket, { code: token, botAccID: state.serverConfig.botAccountID })
+        sendPacket(socket, Packet.ReceiveAuthCodePacket, { code: token, botAccID: state.serverConfig.botAccountID })
     },
     5005: async (socket, args, data, state) => { // VerifyAuthPacket
         state.authManager?.accountsToAuth.push({
