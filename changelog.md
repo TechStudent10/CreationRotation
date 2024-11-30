@@ -1,3 +1,8 @@
+# 1.0.0-beta.8
+**Bugfixes**
+- Fixerd the "login not received" errors
+- Fixed some typos and misc. crashes
+
 # 1.0.0-beta.7
 **New Features**
 - Added code that automatically changes the server URL to the brand new one
