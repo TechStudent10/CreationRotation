@@ -1,4 +1,4 @@
-import { open } from "sqlite"
+import { Database, open } from "sqlite"
 import sqlite3 from "sqlite3"
 
 import * as path from "path"
@@ -15,7 +15,9 @@ import { Account } from "@/types/account"
 
 export const DB_PATH = path.join(__dirname, "database.db")
 
-export interface DBState {}
+export interface DBState {
+    db: Database
+}
 
 export type Moderator = {
     user_id: number
@@ -28,7 +30,8 @@ export type BannedUser = {
 export class DBState {
     constructor() {
         this.openDB().then((db) => {
-            db.migrate({
+            this.db = db
+            this.db.migrate({
                 migrationsPath: path.join(appRoot, "migrations")
             })
             log.info("database migrated")
@@ -54,9 +57,7 @@ export class DBState {
             return 0 // error
         }
 
-        const db = await this.openDB()
-
-        const response = await db.get(`SELECT account_id FROM users WHERE username LIKE ?`, username.toLowerCase())
+        const response = await this.db.get(`SELECT account_id FROM users WHERE username LIKE ?`, username.toLowerCase())
 
         if (!response) {
             log.info("response failed :(")
@@ -65,7 +66,7 @@ export class DBState {
 
         const { account_id } = response
 
-        db.run(
+        this.db.run(
             `
             INSERT INTO banned_users (account_id, issued_by, reason)
             VALUES (?, ?, ?)
@@ -79,9 +80,7 @@ export class DBState {
     }
 
     async unbanUser(account_id: number) {
-        const db = await this.openDB()
-
-        db.run(
+        this.db.run(
             `
             DELETE FROM banned_users
             WHERE account_id = ?
@@ -93,8 +92,7 @@ export class DBState {
     async promoteUser(account_id: number) {
         const password = randomBytes(10).toString("hex")
 
-        const db = await this.openDB()
-        await db.run(`
+        await this.db.run(`
             INSERT INTO moderators (account_id, passw)
             VALUES (?, ?)
             `,
@@ -109,8 +107,7 @@ export class DBState {
         if (!(await this.getModeratorsIds()).includes(account_id)) {
             return "Could not demote someone who is already demoted."
         }
-        const db = await this.openDB()
-        await db.run(
+        await this.db.run(
             `
             DELETE FROM moderators
             WHERE account_id = ?
@@ -121,15 +118,13 @@ export class DBState {
     }
 
     async hasAuthenticated(accountID: number) {
-        const db = await this.openDB()
-        return await db.get("SELECT * FROM users WHERE account_id = ?", accountID) !== undefined
+        return await this.db.get("SELECT * FROM users WHERE account_id = ?", accountID) !== undefined
     }
 
     async registerUser(account: Account) {
         const token = randomBytes(30).toString("hex")
-        const db = await this.openDB()
 
-        await db.run(
+        await this.db.run(
             `
             INSERT INTO users (account_id, user_id, username, token)
             VALUES (?, ?, ?, ?)
@@ -147,9 +142,7 @@ export class DBState {
         // if we haven't even authenticated yet, the token is invalid
         if (!this.hasAuthenticated(accountID)) return false
 
-        const db = await this.openDB()
-
-        const response = await db.get(
+        const response = await this.db.get(
             `
             SELECT token FROM users WHERE account_id = ?
             `,
@@ -167,8 +160,7 @@ export class DBState {
             return false
         }
 
-        const db = await this.openDB()
-        const { passw: hashedPassw } = await db.get("SELECT passw FROM moderators WHERE account_id = ?", data.account?.accountID)
+        const { passw: hashedPassw } = await this.db.get("SELECT passw FROM moderators WHERE account_id = ?", data.account?.accountID)
         data.is_authorized = hashPsw(password) === hashedPassw
 
         if (data.is_authorized) {
@@ -179,17 +171,14 @@ export class DBState {
     }
 
     async getUsers() {
-        const db = await this.openDB()
-        return await db.all("SELECT * FROM users") as Array<{ user_id: number, username: string }>
+        return await this.db.all("SELECT * FROM users") as Array<{ user_id: number, username: string }>
     } 
 
     async getModeratorsIds() {
-        const db = await this.openDB()
-        return (await db.all("SELECT account_id FROM moderators")).map(val => val.account_id) as number[]
+        return (await this.db.all("SELECT account_id FROM moderators")).map(val => val.account_id) as number[]
     }
 
     async getBannedIds() {
-        const db = await this.openDB()
-        return (await db.all("SELECT account_id FROM banned_users")).map(val => val.account_id) as number[]
+        return (await this.db.all("SELECT account_id FROM banned_users")).map(val => val.account_id) as number[]
     }
 }
