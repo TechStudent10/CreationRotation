@@ -130,10 +130,10 @@ class TimeToSwapPacket : public Packet {
 class ReceiveSwappedLevelPacket : public Packet {
     CR_PACKET(3002, ReceiveSwappedLevelPacket)
 
-    ReceiveSwappedLevelPacket(std::vector<std::string> levels):
+    ReceiveSwappedLevelPacket(std::vector<LevelData> levels):
         levels(levels) {}
 
-    std::vector<std::string> levels;
+    std::vector<LevelData> levels;
 
     CR_SERIALIZE(
         CEREAL_NVP(levels)

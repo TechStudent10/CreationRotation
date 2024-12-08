@@ -26,11 +26,6 @@
 			"importance": "required"
 		},
 		{
-            "id": "hjfod.gmd-api",
-            "version": ">=v1.4.0",
-            "importance": "required"
-        },
-		{
             "id": "geode.node-ids",
             "version": ">=v1.17.0",
             "importance": "required"

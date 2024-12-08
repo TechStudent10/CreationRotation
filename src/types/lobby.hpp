@@ -68,3 +68,20 @@ struct Message {
         CEREAL_NVP(author)
     )
 };
+
+struct LevelData {
+    // metadata
+    std::string levelName;
+    int songID;
+    std::string songIDs;
+
+    // level string
+    std::string levelString;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(levelName),
+        CEREAL_NVP(songID),
+        CEREAL_NVP(songIDs),
+        CEREAL_NVP(levelString)
+    )
+};

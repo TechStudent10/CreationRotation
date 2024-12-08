@@ -10,12 +10,19 @@ import log from "@/logging"
 
 export type AccsWithIdx = Array<{ index: number, accID: number }>
 
+export type LevelData = {
+    levelName: string
+    songID: number
+    songIDs: string
+    levelString: string
+}
+
 export interface Swap {
     lobbyCode: string
     lobby: Lobby
     currentTurn: number
 
-    levels: string[]
+    levels: LevelData[]
 
     totalTurns: number
     swapEnded: boolean
@@ -31,7 +38,12 @@ export interface Swap {
     timeout: NodeJS.Timeout
 }
 
-const DUMMY_LEVEL_DATA = "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA"
+const DUMMY_LEVEL_DATA: LevelData = {
+    levelName: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA",
+    levelString: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA",
+    songID: 6942042069,
+    songIDs: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA"
+}
 
 export class Swap {
     constructor(lobbyCode: string, state: ServerState, accs: AccsWithIdx) {
@@ -64,7 +76,7 @@ export class Swap {
         emitToLobby(this.serverState, this.lobbyCode, Packet.TimeToSwapPacket, {})
     }
 
-    addLevel(level: string, accIdx: number) {
+    addLevel(level: LevelData, accIdx: number) {
         const idx = this.swapOrder.indexOf(accIdx)
         this.levels[idx] = level
         this.checkSwap()

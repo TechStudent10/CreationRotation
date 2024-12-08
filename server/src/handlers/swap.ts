@@ -42,7 +42,7 @@ const swapHandlers: Handlers = {
             sendError(socket, "you are not in a lobby")
             return
         }
-        state.swaps[code].addLevel(args.lvlStr, args.accIdx)
+        state.swaps[code].addLevel(args.level, args.accIdx)
     }
 }
 

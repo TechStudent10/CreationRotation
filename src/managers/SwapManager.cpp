@@ -4,7 +4,7 @@
 #include <network/manager.hpp>
 
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
-#include <hjfod.gmd-api/include/GMD.hpp>
+#include <matjson/reflect.hpp>
 
 #include <layers/ChatPanel.hpp>
 #include <utils.hpp>
@@ -148,27 +148,26 @@ void SwapManager::registerListeners() {
         // do not ask me why
         // this game is taped-together jerry-rigged piece of software
         // lvl->m_levelDesc = fmt::format("from: {}", this->createAccountType().name);
-        auto res = gmd::exportLevelAsGmd(lvl, filePath);
 
-        std::ifstream lvlIn(filePath);
-        std::ostringstream levelStr;
-        levelStr << lvlIn.rdbuf();
-        lvlIn.close();
-
-        std::filesystem::remove(filePath);
-
-        if (lvl && Mod::get()->getSettingValue<bool>("delete-lvls")) {
-            // let's not spam everyone's created levels list
-            GameLevelManager::sharedState()->deleteLevel(lvl);
-        }
+        LevelData lvlData = {
+            .levelName = lvl->m_levelName,
+            .songID = lvl->m_songID,
+            .songIDs = lvl->m_songIDs,
+            .levelString = lvl->m_levelString
+        };
 
         nm.send(
             SendLevelPacket::create(
                 currentLobbyCode,
                 swapIdx,
-                levelStr.str()
+                lvlData
             )
         );
+
+        if (lvl && Mod::get()->getSettingValue<bool>("delete-lvls")) {
+            // let's not spam everyone's created levels list
+            GameLevelManager::sharedState()->deleteLevel(lvl);
+        }
     });
     nm.on<ReceiveSwappedLevelPacket>([this](ReceiveSwappedLevelPacket* packet) {
         if (packet->levels.size() < swapIdx) {
@@ -179,38 +178,30 @@ void SwapManager::registerListeners() {
             )->show();
             return;
         }
-        auto gmdStr = packet->levels[swapIdx];
+        auto lvlData = packet->levels[swapIdx];
 
-        auto filePath = std::filesystem::temp_directory_path() / fmt::format("temp{}.gmd", rand());
-        std::ofstream ostream(filePath);
-        ostream << gmdStr;
-        ostream.close();
+        auto lvl = GJGameLevel::create();
 
-        auto lvlRes = gmd::importGmdAsLevel(filePath);
-        if (!lvlRes.isErr()) {
-            auto lvl = lvlRes.unwrap();
-            levelId = EditorIDs::getID(lvl);
-            LocalLevelManager::get()->m_localLevels->insertObject(lvl, 0);
+        lvl->m_levelName = lvlData.levelName;
+        lvl->m_levelString = lvlData.levelString;
+        lvl->m_songID = lvlData.songID;
+        lvl->m_songIDs = lvlData.songIDs;
 
-            #ifdef GEODE_IS_MACOS
-            try {
-            #endif
-            auto scene = EditLevelLayer::scene(lvl);
-            cr::utils::replaceScene(scene);
-            #ifdef GEODE_IS_MACOS
-            } catch (std::exception e) {}
-            #endif
-        } else {
-            FLAlertLayer::create(
-                "Creation Rotation",
-                fmt::format("There was an error importing the level: \n<cy>{}</c>", lvlRes.err()),
-                "OK"
-            )->show();
-        }
+        lvl->m_levelType = GJLevelType::Editor;
+        
+        levelId = EditorIDs::getID(lvl);
+        LocalLevelManager::get()->m_localLevels->insertObject(lvl, 0);
+
+        #ifdef GEODE_IS_MACOS
+        try {
+        #endif
+        auto scene = EditLevelLayer::scene(lvl);
+        cr::utils::replaceScene(scene);
+        #ifdef GEODE_IS_MACOS
+        } catch (std::exception e) {}
+        #endif
 
         roundStartedTime = time(0);
-
-        std::filesystem::remove(filePath);
     });
     nm.on<SwapEndedPacket>([this](SwapEndedPacket* p) {
         log::debug("swap ended; disconnecting from server");

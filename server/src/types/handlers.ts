@@ -3,6 +3,7 @@ import { SocketData, ServerState, LoginInfo } from "./state"
 import { LobbySettings } from "./lobby"
 
 import WebSocket from "ws"
+import { LevelData } from "./swap"
 
 export type Handlers = {
     // CreateLobbyPacket (response: LobbyCreatedPacket)
@@ -49,7 +50,7 @@ export type Handlers = {
     3001?: (socket: WebSocket, args: {
         code: string
         accIdx: number
-        lvlStr: string
+        level: LevelData
     }, data: SocketData, state: ServerState) => void
     // LoginPacket
     5001?: (socket: WebSocket, args: LoginInfo, data: SocketData, state: ServerState) => void

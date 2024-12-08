@@ -1,5 +1,6 @@
 import { Lobby, Message } from "./lobby"
 import { Account } from "./account"
+import { LevelData } from "./swap"
 
 export enum Packet {
     LobbyCreatedPacket = "1001",
@@ -34,7 +35,7 @@ export interface ServerToClientEvents {
     "1007": {} // JoinedLobbyPacket
     "1008": { lobbies: Lobby[] } // ReceivePublicLobbiesPacket
     "1009": { message: Message } // MessageSentPacket
-    "3002": { levels: Array<string> } // ReceiveSwappedLevelPacket
+    "3002": { levels: Array<LevelData> } // ReceiveSwappedLevelPacket
     "3003": {} // SwapEndedPacket
     "4001": { error: string } // ErrorPacket
     "4002": {} // BannedUserPacket
