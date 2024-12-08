@@ -247,3 +247,13 @@ class VerifyAuthPacket : public Packet {
         CEREAL_NVP(account)
     )
 };
+
+// OTHER STUFF
+
+class PingPacket : public Packet {
+    CR_PACKET(5007, PingPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(dummy);
+};

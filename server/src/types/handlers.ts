@@ -63,6 +63,8 @@ export type Handlers = {
     5005?: (socket: WebSocket, args: { account: Account }, data: SocketData, state: ServerState) => void
     // UnbanUserPacket
     5006?: (socket: WebSocket, args: { account_id: number }, data: SocketData, state: ServerState) => void
+    // PingPacket
+    5007?: (socket: WebSocket, args: {}, data: SocketData, state: ServerState) => void
 
     [key: number]: Function | undefined
 }

@@ -179,8 +179,6 @@ const lobbyHandlers: Handlers = {
         }
         correctLobby(state.lobbies[code])
 
-        sendMessageToLobby(state, code, "testing 123", data.account)
-
         broadcastLobbyUpdate(state, code)
     },
     2008: (socket, args, data, state) => { // KickUserPacket

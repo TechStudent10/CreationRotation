@@ -81,6 +81,9 @@ const userHandlers: Handlers = {
 
         await state.dbState.unbanUser(args.account_id)
     },
+    5007: (socket, _, __, ___) => {
+        sendPacket(socket, Packet.PongPacket, {})
+    }
 }
 
 export default userHandlers

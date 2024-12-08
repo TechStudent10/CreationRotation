@@ -163,6 +163,16 @@ class ErrorPacket : public Packet {
     )
 };
 
+class PongPacket : public Packet {
+    CR_PACKET(4009, PongPacket)
+
+    std::string dummy;
+
+    CR_SERIALIZE(dummy);
+};
+
+// AUTH
+
 class BannedUserPacket : public Packet {
     CR_PACKET(4002, BannedUserPacket)
 

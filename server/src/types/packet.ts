@@ -20,7 +20,8 @@ export enum Packet {
     ReceiveTokenPacket = "4005",
     InvalidTokenPacket = "4006",
     LoginNotReceivedPacket = "4007",
-    LoggedInPacket = "4008"
+    LoggedInPacket = "4008",
+    PongPacket = "4009"
 }
 
 export interface ServerToClientEvents {
@@ -43,4 +44,5 @@ export interface ServerToClientEvents {
     "4006": {} // InvalidTokenPacket
     "4007": {} // LoginNotReceivedPacket
     "4008": {} // LoggedInPacket
+    "4009": {} // PongPacket
 }

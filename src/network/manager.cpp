@@ -1,10 +1,30 @@
 #include "manager.hpp"
 
 #include <utils.hpp>
+
+#include "packets/client.hpp"
 #include "packets/server.hpp"
+
+time_t lastPinged = 0;
 
 NetworkManager::NetworkManager() {
     ix::initNetSystem();
+
+    // schedule pinging
+    CCScheduler::get()->scheduleUpdateForTarget(this, -1, false);
+
+    this->on<PongPacket>([this](PongPacket*) {
+        responseTime = time(0) - lastPinged;
+    });
+}
+
+void NetworkManager::update(float dt) {
+    if (!this->isConnected) return;
+
+    if (time(0) - lastPinged < 10) return;
+    lastPinged = time(0);
+
+    this->send(PingPacket::create());
 }
 
 void NetworkManager::connect(bool shouldReconnect, std::function<void()> callback) {
@@ -22,7 +42,7 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
 
     socket.disableAutomaticReconnection();
 
-    socket.setPingInterval(15);
+    // socket.setPingInterval(15);
 
 #ifdef GEODE_IS_ANDROID
     ix::SocketTLSOptions tlsOptions;
@@ -63,6 +83,7 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
                 for (auto packetFn : packetQueue) {
                     packetFn();
                 }
+
                 // clear the queue
                 packetQueue.clear();
 

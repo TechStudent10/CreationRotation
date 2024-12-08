@@ -15,7 +15,7 @@ using namespace geode::prelude;
 using DisconnectCallback = std::function<void(std::string)>;
 using MiddlewareCb = std::function<void(std::function<void()> callback)>;
 
-class NetworkManager {
+class NetworkManager : public CCObject {
 public:
     static NetworkManager& get() {
         static NetworkManager instance;
@@ -37,6 +37,8 @@ public:
 
     bool showDisconnectPopup = true;
     bool isConnected = false;
+
+    float responseTime = 0;
 
     MiddlewareCb middleware;
 
@@ -124,6 +126,7 @@ protected:
     ix::WebSocket socket;
 
     void onMessage(const ix::WebSocketMessagePtr& msg);
+    void update(float dt);
 
     DisconnectCallback disconnectBtnCallback;
     DisconnectCallback disconnectEventCb;
