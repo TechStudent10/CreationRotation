@@ -87,7 +87,9 @@ public:
             return;
         }
 
+#ifdef CR_DEBUG
         log::debug("sending packet {} ({})", packet->getPacketName(), packet->getPacketID());
+#endif
         std::stringstream ss;
         // cereal uses RAII, meaning
         // the contents of `ss` is guaranteed

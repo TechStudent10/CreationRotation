@@ -19,6 +19,13 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
+option(CR_DEBUG "Debug mode" OFF)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CR_DEBUG ON)
+    add_compile_definitions(CR_DEBUG=1)
+endif()
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_compile_definitions(WIN32_LEAN_AND_MEAN=1)
     target_link_libraries(${PROJECT_NAME} Crypt32)
@@ -47,6 +54,13 @@ set(MBEDCRYPTO_LIBRARY "mbedcrypto")
 
 CPMAddPackage("gh:machinezone/IXWebSocket#dc8807e")
 install(TARGETS mbedtls mbedx509 mbedcrypto EXPORT mbedtls-targets)
+
+if (WIN32)
+    if (CR_DEBUG)
+        target_compile_definitions(mbedtls PRIVATE _HAS_ITERATOR_DEBUGGING=0)
+        target_compile_definitions(ixwebsocket PRIVATE _HAS_ITERATOR_DEBUGGING=0)
+    endif()
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${ixwebsocket_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/cereal/include")
