@@ -2,6 +2,8 @@
 #include <string>
 #include <serialization.hpp>
 
+#include <defs.hpp>
+
 #define CR_ARGS(...) __VA_ARGS__
 
 #define CR_PACKET(id, name) \
@@ -19,7 +21,7 @@
         } \
         name() {}
 
-class Packet {
+class CR_DLL Packet {
 public:
     static const int PACKET_ID = 0000;
 

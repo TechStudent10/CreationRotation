@@ -62,6 +62,8 @@ if (WIN32)
     endif()
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE CR_EXPORTING)
+
 target_include_directories(${PROJECT_NAME} PRIVATE ${ixwebsocket_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/cereal/include")
 

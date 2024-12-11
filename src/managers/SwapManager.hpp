@@ -5,7 +5,9 @@
 #include <network/packets/client.hpp>
 #include <network/packets/server.hpp>
 
-class SwapManager {
+#include <defs.hpp>
+
+class CR_DLL SwapManager {
 public:
     static SwapManager& get() {
         static SwapManager instance;

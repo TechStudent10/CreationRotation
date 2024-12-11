@@ -1,9 +1,10 @@
 #pragma once
 #include <Geode/Geode.hpp>
+#include <defs.hpp>
 
 using namespace geode::prelude;
 
-class LobbySelectPopup : public geode::Popup<> {
+class CR_DLL LobbySelectPopup : public geode::Popup<> {
 protected:
     Border* lobbyList;
 

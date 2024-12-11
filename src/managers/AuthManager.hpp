@@ -4,9 +4,11 @@
 #include <network/packets/client.hpp>
 #include <network/packets/server.hpp>
 
+#include <defs.hpp>
+
 using namespace geode::prelude;
 
-class AuthManager : public UploadMessageDelegate {
+class CR_DLL AuthManager : public UploadMessageDelegate {
 public:
     static AuthManager& get() {
         static AuthManager instance;

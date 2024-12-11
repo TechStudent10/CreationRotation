@@ -10,12 +10,15 @@
 
 #include <Geode/Geode.hpp>
 #include <matjson.hpp>
+
+#include <defs.hpp>
+
 using namespace geode::prelude;
 
 using DisconnectCallback = std::function<void(std::string)>;
 using MiddlewareCb = std::function<void(std::function<void()> callback)>;
 
-class NetworkManager : public CCObject {
+class CR_DLL NetworkManager : public CCObject {
 public:
     static NetworkManager& get() {
         static NetworkManager instance;

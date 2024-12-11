@@ -1,9 +1,11 @@
 #include <Geode/Geode.hpp>
 #include <types/lobby.hpp>
 
+#include <defs.hpp>
+
 using namespace geode::prelude;
 
-class PlayerCell : public CCLayer {
+class CR_DLL PlayerCell : public CCLayer {
 protected:
     Account m_account;
 
@@ -14,7 +16,7 @@ public:
     static PlayerCell* create(Account account, float width, bool canKick);
 };
 
-class LobbyLayer : public CCLayer {
+class CR_DLL LobbyLayer : public CCLayer {
 protected:
     std::string lobbyCode;
     bool isOwner = false;
