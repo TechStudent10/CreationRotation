@@ -1,6 +1,13 @@
+# 1.0.0-beta.9
+**Bugfixes**
+- Fixed ping timeout errors
+- Fixed swaps not swapping (this removes the GMD-API dependency)
+- Export some symbols
+- Fixed dupe accounts
+
 # 1.0.0-beta.8
 **Bugfixes**
-- Fixerd the "login not received" errors
+- Fixed the "login not received" errors
 - Fixed some typos and misc. crashes
 
 # 1.0.0-beta.7
