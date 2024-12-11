@@ -108,6 +108,10 @@ const lobbyHandlers: Handlers = {
             sendError(socket, `lobby with code '${code}' does not exist` )
             return
         }
+        if (state.lobbies[code].accounts.filter(acc => acc.accountID == account.accountID).length >= 1) {
+            sendError(socket, "you are already in this lobby")
+            return
+        }
         if (Object.keys(state.swaps).includes(code)) {
             sendError(socket, `creation rotation with code '${code}' is already in session` )
             return
