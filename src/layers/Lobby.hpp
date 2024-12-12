@@ -35,7 +35,7 @@ protected:
     CCMenuItemSpriteExtra* startBtn;
 
     LoadingCircle* loadingCircle;
-    CCLayer* mainLayer;
+    CCNode* mainLayer;
 
     bool init(std::string code);
     void keyBackClicked();

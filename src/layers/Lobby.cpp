@@ -111,7 +111,7 @@ bool LobbyLayer::init(std::string code) {
     auto director = CCDirector::sharedDirector();
     auto size = director->getWinSize();
 
-    mainLayer = CCLayer::create();
+    mainLayer = CCNode::create();
     mainLayer->setContentSize(size);
 
     background = CCSprite::create("GJ_gradientBG.png");
@@ -269,7 +269,7 @@ void LobbyLayer::unregisterListeners() {
 
 LobbyLayer::~LobbyLayer() {
     unregisterListeners();
-    if (mainLayer) mainLayer->release();
+    // if (mainLayer) mainLayer->release();
 }
 
 void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
@@ -284,7 +284,7 @@ void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
     auto listWidth = size.width / 1.5f;
 
     if (!mainLayer) return;
-    mainLayer->retain();
+    // mainLayer->retain();
 
     if (isFirstRefresh) {
         titleLabel = CCLabelBMFont::create(
@@ -313,12 +313,12 @@ void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
         mainLayer->addChild(menu);
     }
 
-    if (titleLabel) titleLabel->setString(
-        fmt::format("{} ({})",
-            info.settings.name,
-            Mod::get()->getSettingValue<bool>("hide-code") ? "......" : info.code
-        ).c_str()
-    );
+    // if (titleLabel) titleLabel->setString(
+    //     fmt::format("{} ({})",
+    //         info.settings.name,
+    //         Mod::get()->getSettingValue<bool>("hide-code") ? "......" : info.code
+    //     ).c_str()
+    // );
 
     if (!playerList && !isFirstRefresh) return;
     if (playerList) playerList->removeFromParent();
