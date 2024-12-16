@@ -313,12 +313,12 @@ void LobbyLayer::refresh(LobbyInfo info, bool isFirstRefresh) {
         mainLayer->addChild(menu);
     }
 
-    // if (titleLabel) titleLabel->setString(
-    //     fmt::format("{} ({})",
-    //         info.settings.name,
-    //         Mod::get()->getSettingValue<bool>("hide-code") ? "......" : info.code
-    //     ).c_str()
-    // );
+    if (titleLabel) titleLabel->setString(
+        fmt::format("{} ({})",
+            info.settings.name,
+            Mod::get()->getSettingValue<bool>("hide-code") ? "......" : info.code
+        ).c_str()
+    );
 
     if (!playerList && !isFirstRefresh) return;
     if (playerList) playerList->removeFromParent();
