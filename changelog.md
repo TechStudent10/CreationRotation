@@ -1,3 +1,8 @@
+# 1.0.0-beta.10
+**Bugfixes**
+- Fix a crash that occurs when joining a lobby a 2nd time (god I hated this one)
+- Fix swaps breaking after a disconnect
+
 # 1.0.0-beta.9
 **Bugfixes**
 - Fixed ping timeout errors
