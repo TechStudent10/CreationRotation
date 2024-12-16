@@ -17,12 +17,17 @@ export type LevelData = {
     levelString: string
 }
 
+export type SwappedLevel = {
+    level: LevelData,
+    accountID: number
+}
+
 export interface Swap {
     lobbyCode: string
     lobby: Lobby
     currentTurn: number
 
-    levels: LevelData[]
+    levels: SwappedLevel[]
 
     totalTurns: number
     swapEnded: boolean
@@ -31,22 +36,23 @@ export interface Swap {
     isSwapEnding: boolean
     closeReason: string
 
-    accountIndexes: AccsWithIdx
-
     serverState: ServerState
 
     timeout: NodeJS.Timeout
 }
 
-const DUMMY_LEVEL_DATA: LevelData = {
-    levelName: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA",
-    levelString: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA",
-    songID: 6942042069,
-    songIDs: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA"
+const DUMMY_LEVEL_DATA: SwappedLevel = {
+    level: {
+        levelName: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA",
+        levelString: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA",
+        songID: 6942042069,
+        songIDs: "THIS IS DUMMY DATA I REPEAT THIS IS DUMMY DATA"
+    },
+    accountID: 6942042069
 }
 
 export class Swap {
-    constructor(lobbyCode: string, state: ServerState, accs: AccsWithIdx) {
+    constructor(lobbyCode: string, state: ServerState) {
         this.lobbyCode = lobbyCode
         this.lobby = state.lobbies[lobbyCode]
         this.currentTurn = 0
@@ -55,19 +61,16 @@ export class Swap {
         this.totalTurns = getLength(this.lobby.accounts) * this.lobby.settings.turns
 
         this.levels = []
-        this.accountIndexes = accs
 
         this.currentlySwapping = false
         this.isSwapEnding = false
 
         // initialize swap order
-        this.swapOrder = offsetArray(
-            [...Array(accs.length).keys()],
-        1)
+        this.swapOrder = this.lobby.accounts.map(acc => acc.accountID)
     }
     
     swap(ending: boolean = false, reason: string = "") {
-        this.levels = Array(getLength(this.swapOrder)).fill(DUMMY_LEVEL_DATA)
+        this.levels = []
         this.currentTurn++
         this.currentlySwapping = true
         this.isSwapEnding = ending
@@ -76,22 +79,27 @@ export class Swap {
         emitToLobby(this.serverState, this.lobbyCode, Packet.TimeToSwapPacket, {})
     }
 
-    addLevel(level: LevelData, accIdx: number) {
-        const idx = this.swapOrder.indexOf(accIdx)
-        this.levels[idx] = level
+    addLevel(level: LevelData, accId: number) {
+        const idx = this.swapOrder.indexOf(accId)
+        this.levels.push(
+            {
+                accountID: parseInt(offsetArray(this.swapOrder, 1)[idx]),
+                level
+            }
+        )
         this.checkSwap()
     }
 
     checkSwap() {
         if (!this.currentlySwapping) return
-        this.accountIndexes.forEach(acc => {
+        this.lobby.accounts.forEach((acc, index) => {
             if (this.serverState.lobbies[this.lobbyCode].accounts.findIndex(
-                lobbyAcc => lobbyAcc.userID === acc.accID
+                lobbyAcc => lobbyAcc.accountID === acc.accountID
             ) !== -1) return
 
-            this.levels.splice(acc.index, 1)
+            delete this.levels[index]
         })
-        if (this.levels.includes(DUMMY_LEVEL_DATA)) return
+        if (getLength(this.levels) < this.lobby.accounts.length) return
         this.currentlySwapping = false
 
         if (!this.isSwapEnding) {
@@ -106,21 +114,22 @@ export class Swap {
                 return
             }
             this.scheduleNextSwap()
-        } else {
-            this.swapEnded = true
-            this.levels = offsetArray(this.levels, this.totalTurns - this.currentTurn)
-            emitToLobby(this.serverState, this.lobbyCode, Packet.ReceiveSwappedLevelPacket, { levels: this.levels })
-            Object.values(this.serverState.sockets[this.lobbyCode]).forEach(socket => {
-                socket.close(1000, this.closeReason)
-            })
         }
+        // else {
+        //     this.swapEnded = true
+        //     this.levels = offsetArray(this.levels, this.totalTurns - this.currentTurn)
+        //     emitToLobby(this.serverState, this.lobbyCode, Packet.ReceiveSwappedLevelPacket, { levels: this.levels })
+        //     Object.values(this.serverState.sockets[this.lobbyCode]).forEach(socket => {
+        //         socket.close(1000, this.closeReason)
+        //     })
+        // }
     }
 
     scheduleNextSwap() {
         if (this.swapEnded) return
         this.timeout = setTimeout(() => {
             this.swap()
-        }, this.lobby.settings.minutesPerTurn * 60_000)
+        }, 10_000) // this.lobby.settings.minutesPerTurn * 60_000
     }
 
     unscheduleNextSwap() {

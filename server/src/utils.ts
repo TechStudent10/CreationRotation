@@ -86,7 +86,7 @@ export function disconnectFromLobby(data: SocketData, state: ServerState) {
                 state.swaps[lobbyCode].unscheduleNextSwap()
                 delete state.swaps[lobbyCode]
             } else if (state.swaps[lobbyCode]) {
-                if (state.swaps[lobbyCode].levels.length !== 0) {
+                if (getLength(state.swaps[lobbyCode].levels) !== 0) {
                     state.swaps[lobbyCode].checkSwap()
                 }
             }

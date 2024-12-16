@@ -94,28 +94,13 @@ class MessageSentPacket : public Packet {
     
 // LEVEL SWAP //
 
-struct AccWithIndex {
-    int index;
-    int accID;
-
-    CR_SERIALIZE(
-        CEREAL_NVP(index),
-        CEREAL_NVP(accID)
-    )
-};
-
 class SwapStartedPacket : public Packet {
     CR_PACKET(1005, SwapStartedPacket)
 
-    using Accounts = std::vector<AccWithIndex>;
-
-    SwapStartedPacket(Accounts accounts):
-        accounts(accounts) {}
-
-    Accounts accounts;
+    std::string dummy;
 
     CR_SERIALIZE(
-        CEREAL_NVP(accounts)
+        dummy
     )
 };
 
@@ -127,13 +112,23 @@ class TimeToSwapPacket : public Packet {
     CR_SERIALIZE(dummy)
 };
 
+struct SwappedLevel {
+    LevelData level;
+    int accountID;
+
+    CR_SERIALIZE(
+        CEREAL_NVP(level),
+        CEREAL_NVP(accountID)
+    )
+};
+
 class ReceiveSwappedLevelPacket : public Packet {
     CR_PACKET(3002, ReceiveSwappedLevelPacket)
 
-    ReceiveSwappedLevelPacket(std::vector<LevelData> levels):
+    ReceiveSwappedLevelPacket(std::vector<SwappedLevel> levels):
         levels(levels) {}
 
-    std::vector<LevelData> levels;
+    std::vector<SwappedLevel> levels;
 
     CR_SERIALIZE(
         CEREAL_NVP(levels)

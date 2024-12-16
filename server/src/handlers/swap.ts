@@ -22,17 +22,9 @@ const swapHandlers: Handlers = {
             return
         }
 
-        let accs: AccsWithIdx = []
+        emitToLobby(state, lobbyCode, Packet.SwapStartedPacket, {})
 
-        state.lobbies[lobbyCode].accounts.forEach((account, index) => {
-            accs.push({
-                index: index,
-                accID: account.userID
-            })
-        })
-        emitToLobby(state, lobbyCode, Packet.SwapStartedPacket, { accounts: accs })
-
-        state.swaps[lobbyCode] = new Swap(lobbyCode, state, accs)
+        state.swaps[lobbyCode] = new Swap(lobbyCode, state)
         state.swaps[lobbyCode].scheduleNextSwap()
     },
     
@@ -42,7 +34,7 @@ const swapHandlers: Handlers = {
             sendError(socket, "you are not in a lobby")
             return
         }
-        state.swaps[code].addLevel(args.level, args.accIdx)
+        state.swaps[code].addLevel(args.level, data.account?.accountID || 0)
     }
 }
 

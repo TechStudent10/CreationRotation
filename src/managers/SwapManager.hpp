@@ -33,7 +33,6 @@ public:
     int roundStartedTime;
     int roundEndingTime;
 
-    int swapIdx;
     int levelId;
 
     void startSwap(SwapStartedPacket* packet);

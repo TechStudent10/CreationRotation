@@ -142,19 +142,13 @@ class StartSwapPacket : public Packet {
 class SendLevelPacket : public Packet {
     CR_PACKET(3001, SendLevelPacket)
 
-    SendLevelPacket(std::string code, int accIdx, LevelData level):
-        code(code),
-        accIdx(accIdx),
+    SendLevelPacket(LevelData level):
         level(level) {}
 
-    int accIdx;
     LevelData level;
-    std::string code;
 
     CR_SERIALIZE(
-        CEREAL_NVP(accIdx),
-        CEREAL_NVP(level),
-        CEREAL_NVP(code)
+        CEREAL_NVP(level)
     )
 };
 

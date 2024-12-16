@@ -48,8 +48,6 @@ export type Handlers = {
     2010?: (socket: WebSocket, args: { message: string }, data: SocketData, state: ServerState) => void
     // SendLevelPacket
     3001?: (socket: WebSocket, args: {
-        code: string
-        accIdx: number
         level: LevelData
     }, data: SocketData, state: ServerState) => void
     // LoginPacket

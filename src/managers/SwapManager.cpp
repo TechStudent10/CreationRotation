@@ -104,25 +104,17 @@ void SwapManager::startSwap(SwapStartedPacket* packet) {
         secondsPerRound = info.settings.minutesPerTurn * 60;
     });
 
-    for (auto acc : packet->accounts) {
-        if (acc.accID != cr::utils::createAccountType().userID) continue;
+    auto glm = GameLevelManager::sharedState();
+    auto newLvl = glm->createNewLevel();
 
-        swapIdx = acc.index;
+    levelId = EditorIDs::getID(newLvl);
 
-        auto glm = GameLevelManager::sharedState();
-        auto newLvl = glm->createNewLevel();
+    registerListeners();
 
-        levelId = EditorIDs::getID(newLvl);
+    roundStartedTime = time(0);
 
-        registerListeners();
-
-        roundStartedTime = time(0);
-
-        auto scene = EditLevelLayer::scene(newLvl);
-        cr::utils::replaceScene(scene);
-
-        break;
-    }
+    auto scene = EditLevelLayer::scene(newLvl);
+    cr::utils::replaceScene(scene);
 }
 
 void SwapManager::registerListeners() {
@@ -157,11 +149,7 @@ void SwapManager::registerListeners() {
         };
 
         nm.send(
-            SendLevelPacket::create(
-                currentLobbyCode,
-                swapIdx,
-                lvlData
-            )
+            SendLevelPacket::create(lvlData)
         );
 
         if (lvl && Mod::get()->getSettingValue<bool>("delete-lvls")) {
@@ -170,15 +158,22 @@ void SwapManager::registerListeners() {
         }
     });
     nm.on<ReceiveSwappedLevelPacket>([this](ReceiveSwappedLevelPacket* packet) {
-        if (packet->levels.size() < swapIdx) {
-            FLAlertLayer::create(
-                "Creation Rotation",
-                "<cr>There was an error while fetching the swapped level. If you're reading this, something has gone terribly wrong, please report it at once.</c>",
-                "OK"
-            )->show();
-            return;
+        // if (packet->levels.size() < swapIdx) {
+        //     FLAlertLayer::create(
+        //         "Creation Rotation",
+        //         "<cr>There was an error while fetching the swapped level. If you're reading this, something has gone terribly wrong, please report it at once.</c>",
+        //         "OK"
+        //     )->show();
+        //     return;
+        // }
+        LevelData lvlData;
+
+        for (auto swappedLevel : packet->levels) {
+            if (swappedLevel.accountID != cr::utils::createAccountType().accountID) continue;
+
+            lvlData = swappedLevel.level;
+            break;
         }
-        auto lvlData = packet->levels[swapIdx];
 
         auto lvl = GJGameLevel::create();
 
