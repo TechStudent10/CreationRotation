@@ -97,7 +97,7 @@ export class Swap {
                 lobbyAcc => lobbyAcc.accountID === acc.accountID
             ) !== -1) return
 
-            delete this.levels[index]
+            this.levels.splice(index, 1)
         })
         if (getLength(this.levels) < this.lobby.accounts.length) return
         this.currentlySwapping = false
@@ -129,7 +129,7 @@ export class Swap {
         if (this.swapEnded) return
         this.timeout = setTimeout(() => {
             this.swap()
-        }, 10_000) // this.lobby.settings.minutesPerTurn * 60_000
+        }, this.lobby.settings.minutesPerTurn * 60_000)
     }
 
     unscheduleNextSwap() {
