@@ -1,3 +1,7 @@
+# 1.0.0-beta.11
+**Bugfixes**
+- Fix a long-standing bug where swaps simply do not work
+
 # 1.0.0-beta.10
 **Bugfixes**
 - Fix a crash that occurs when joining a lobby a 2nd time (god I hated this one)
