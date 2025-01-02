@@ -129,7 +129,7 @@ export class Swap {
         if (this.swapEnded) return
         this.timeout = setTimeout(() => {
             this.swap()
-        }, this.lobby.settings.minutesPerTurn * 60_000)
+        }, 10_000) // this.lobby.settings.minutesPerTurn * 60_000
     }
 
     unscheduleNextSwap() {

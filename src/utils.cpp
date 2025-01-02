@@ -26,19 +26,3 @@ void cr::utils::scaleToMatch(CCNode* orig, CCNode* node, bool isSquare) {
         node->setScaleY(scaleFactorY);
     }
 }
-
-Account cr::utils::createAccountType() {
-    auto gm = GameManager::get();
-
-    return {
-        .name = gm->m_playerName,
-        .userID = gm->m_playerUserID.value(),
-        .accountID = GJAccountManager::sharedState()->m_accountID,
-        .iconID = gm->getPlayerFrame(),
-        .color1 = gm->m_playerColor.value(),
-        .color2 = gm->m_playerColor2.value(),
-        .color3 = gm->m_playerGlow ?
-            gm->m_playerGlowColor.value() :
-            -1
-    };
-}

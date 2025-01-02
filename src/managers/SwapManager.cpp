@@ -141,11 +141,14 @@ void SwapManager::registerListeners() {
         // this game is taped-together jerry-rigged piece of software
         // lvl->m_levelDesc = fmt::format("from: {}", this->createAccountType().name);
 
+        auto b = new DS_Dictionary();
+        lvl->encodeWithCoder(b);
+
         LevelData lvlData = {
             .levelName = lvl->m_levelName,
             .songID = lvl->m_songID,
             .songIDs = lvl->m_songIDs,
-            .levelString = lvl->m_levelString
+            .levelString = b->saveRootSubDictToString()
         };
 
         nm.send(
@@ -177,10 +180,13 @@ void SwapManager::registerListeners() {
 
         auto lvl = GJGameLevel::create();
 
-        lvl->m_levelName = lvlData.levelName;
-        lvl->m_levelString = lvlData.levelString;
-        lvl->m_songID = lvlData.songID;
-        lvl->m_songIDs = lvlData.songIDs;
+        // lvl->m_levelName = lvlData.levelName;
+        // lvl->m_levelString = lvlData.levelString;
+        // lvl->m_songID = lvlData.songID;
+        // lvl->m_songIDs = lvlData.songIDs;
+        auto b = new DS_Dictionary();
+        b->loadRootSubDictFromString(lvlData.levelString);
+        lvl->dataLoaded(b);
 
         lvl->m_levelType = GJLevelType::Editor;
         
