@@ -1,6 +1,9 @@
 #include "AuthManager.hpp"
+#include "network/manager.hpp"
+#include "network/packets/client.hpp"
 #include "network/packets/server.hpp"
 
+#include <argon/argon.hpp>
 #include <utils.hpp>
 
 AuthManager::AuthManager() {
@@ -35,22 +38,14 @@ AuthManager::AuthManager() {
 
 void AuthManager::beginAuthorization(std::function<void()> callback) {
     auto& nm = NetworkManager::get();
-    nm.send(
-        RequestAuthorizationPacket::create(
-            cr::utils::createAccountType().accountID
-        )
-    );
-    nm.on<ReceiveAuthCodePacket>([this](ReceiveAuthCodePacket* packet) {
-        auto glm = GameLevelManager::sharedState();
-        glm->m_uploadMessageDelegate = this;
-        glm->uploadUserMessage(
-            packet->botAccID,
-            packet->code,
-            "Creation Rotation Identity Verification. This message can be safely deleted."
-        );
-    });
-    nm.on<ReceiveTokenPacket>([this, callback](ReceiveTokenPacket* packet) {
-        this->setToken(packet->token);
+    auto res = argon::startAuth([&nm, callback, this](Result<std::string> res) {
+        if (!res) {
+            log::warn("auth failed: {}", res.unwrapErr());
+            return;
+        }
+
+        auto token = std::move(res).unwrap();
+        this->setToken(token);
         this->login(callback);
     });
 }

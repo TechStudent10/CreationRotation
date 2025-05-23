@@ -9,6 +9,7 @@ import { version } from "@/../package.json"
 import log from "@/logging"
 import { randomBytes } from "node:crypto"
 import { Message } from "@/auth"
+import axios from "axios"
 
 async function isModerator(state: ServerState, userID: number) {
     return (await state.dbState.getModeratorsIds()).includes(userID)
@@ -22,22 +23,23 @@ const userHandlers: Handlers = {
             return
         }
 
-        if (!(await state.dbState.isValidToken(args.account.accountID, args.token))) {
-            sendPacket(socket, Packet.InvalidTokenPacket, {})
-            return
-        }
+        await axios.get(`https://argon.globed.dev/v1/validation/check?account_id=${args.account.accountID}&authtoken=${args.token}`).then((res) => {
+            if (res.data["valid"] == true) {
+                state.socketCount++
+                if (state.socketCount > state.peakSocketCount) {
+                    state.peakSocketCount = state.socketCount
+                }
+                
+                data.account = args.account
+                data.loggedIn = true
 
-        state.socketCount++
-        if (state.socketCount > state.peakSocketCount) {
-            state.peakSocketCount = state.socketCount
-        }
-        
-        data.account = args.account
-        data.loggedIn = true
+                sendPacket(socket, Packet.LoggedInPacket, {})
 
-        sendPacket(socket, Packet.LoggedInPacket, {})
-
-        log.info(`new connection! ${data.account.name} (ID: ${data.account.userID}, connection #${state.socketCount})`)
+                log.info(`new connection! ${data.account.name} (ID: ${data.account.userID}, connection #${state.socketCount})`)
+            } else {
+                sendPacket(socket, Packet.InvalidTokenPacket, {})
+            }
+        })
     },
     5002: async (socket, args, data, state) => { // BanUserPacket
         if (!(await isModerator(state, data.account?.accountID || 0))) {

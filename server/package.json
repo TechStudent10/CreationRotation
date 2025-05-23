@@ -7,6 +7,7 @@
   "private": true,
   "dependencies": {
     "app-root-path": "^3.1.0",
+    "axios": "^1.9.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "obscenity": "^0.4.0",
@@ -21,7 +22,7 @@
     "@types/ws": "^8.5.12",
     "tsc": "^2.0.4",
     "tsc-alias": "^1.8.10",
-    "typescript": "^5.5.4"
+    "typescript": "^5.8.3"
   },
   "scripts": {
     "dev": "tsc && tsc-alias && node out/main.js",

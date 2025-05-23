@@ -121,6 +121,9 @@ app.get("/", (req, res) => {
 })
 
 app.get("/stats", (req, res) => {
+    for (let i = 0; i < getLength(state.lobbies); i++) {
+        log.info("sigma! " + state.lobbies[i].code)
+    }
     res.send(`
         <h1>Creation Rotation server statistics</h1>
         <p>
