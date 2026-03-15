@@ -13,10 +13,10 @@
         int getPacketID() const override { return this->PACKET_ID; } \
         const char* getPacketName() const override { return this->PACKET_NAME; } \
         template<typename... Args> \
-        static name* create(Args ...args) { \
-            return new name(args...); \
+        static name create(Args ...args) { \
+            return name(args...); \
         } \
-        void decode(std::string in) override { \
+        void decode(std::string_view in) override { \
             \
         } \
         name() {}
@@ -25,9 +25,9 @@ class CR_DLL Packet {
 public:
     static const int PACKET_ID = 0000;
 
-    virtual void decode(std::string) = 0;
+    virtual void decode(std::string_view) = 0;
 
-    virtual int getPacketID() const = 0; 
+    virtual int getPacketID() const = 0;
     virtual const char* getPacketName() const = 0;
 };
 
@@ -39,12 +39,12 @@ class TestPacket : public Packet {
     CR_PACKET(0001, TestPacket)
 
     TestPacket(std::string hello, std::string world):
-        hello(hello),
-        world(world) {}
+        hello(std::move(hello)),
+        world(std::move(world)) {}
 
     std::string hello;
     std::string world;
 
     CR_SERIALIZE(hello, world)
-};  
+};
 

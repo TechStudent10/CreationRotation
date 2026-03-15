@@ -1,8 +1,8 @@
 #include "StatusPopup.hpp"
 
-StatusPopup* StatusPopup::create(std::string title) {
+StatusPopup* StatusPopup::create(ZStringView title) {
     auto ret = new StatusPopup;
-    if (ret->initAnchored(100.f, 75.f, title)) {
+    if (ret->init(title)) {
         ret->autorelease();
         return ret;
     }
@@ -10,7 +10,11 @@ StatusPopup* StatusPopup::create(std::string title) {
     return nullptr;
 }
 
-bool StatusPopup::setup(std::string title) {
+bool StatusPopup::init(ZStringView title) {
+    if (!Popup::init(100.f, 75.f)) {
+        return false;
+    }
+
     this->setTitle(title);
 
     statusLabel = CCLabelBMFont::create(
@@ -25,6 +29,6 @@ bool StatusPopup::setup(std::string title) {
     return true;
 }
 
-void StatusPopup::setStatus(std::string status) {
+void StatusPopup::setStatus(ZStringView status) {
     statusLabel->setString(status.c_str());
 }

@@ -243,12 +243,12 @@ bool LobbyLayer::init(std::string code) {
 
 void LobbyLayer::registerListeners() {
     auto& nm = NetworkManager::get();
-    nm.on<LobbyUpdatedPacket>([this](LobbyUpdatedPacket* packet) {
-        this->refresh(packet->info);
+    nm.on<LobbyUpdatedPacket>([this](LobbyUpdatedPacket packet) {
+        this->refresh(std::move(packet.info));
     });
-    nm.on<SwapStartedPacket>([this](SwapStartedPacket* packet) {
+    nm.on<SwapStartedPacket>([this](SwapStartedPacket packet) {
         auto& sm = SwapManager::get();
-        sm.startSwap(packet);
+        sm.startSwap(std::move(packet));
         NetworkManager::get().unbind<SwapStartedPacket>();
     });
     nm.showDisconnectPopup = true;

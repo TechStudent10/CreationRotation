@@ -3,9 +3,9 @@
 
 using namespace geode::prelude;
 
-class AdminPanel : public geode::Popup<> {
+class AdminPanel : public geode::Popup {
 protected:
-    bool setup() override;
+    bool init() override;
 public:
     static AdminPanel* create();
 };

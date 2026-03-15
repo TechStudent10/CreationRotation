@@ -15,8 +15,8 @@
 
 using namespace geode::prelude;
 
-using DisconnectCallback = std::function<void(std::string)>;
-using MiddlewareCb = std::function<void(std::function<void()> callback)>;
+using DisconnectCallback = geode::Function<void(std::string)>;
+using MiddlewareCb = geode::Function<void(std::function<void()> callback)>;
 
 class CR_DLL NetworkManager : public CCObject {
 public:
@@ -26,11 +26,11 @@ public:
     }
 
     void setDisconnectCallback(DisconnectCallback callback) {
-        disconnectBtnCallback = callback;
+        disconnectBtnCallback = std::move(callback);
     }
 
     void onDisconnect(DisconnectCallback callback) {
-        disconnectEventCb = callback;
+        disconnectEventCb = std::move(callback);
     }
 
     template<typename T>
@@ -50,21 +50,20 @@ public:
 
     template<typename T>
     requires std::is_base_of_v<Packet, T>
-    inline void on(std::function<void(T*)> callback, bool shouldUnbind = false) {
-        listeners[T::PACKET_ID] = [callback](std::string msg) {
-            std::stringstream ss;
-            ss << msg;
+    inline void on(std::function<void(T)> callback, bool shouldUnbind = false) {
+        listeners[T::PACKET_ID] = [callback = std::move(callback)](std::string msg) mutable {
+            std::stringstream ss(std::move(msg));
 
-            T* packet = T::create();
+            T packet = T::create();
 
             {
                 cereal::JSONInputArchive iarchive(ss);
 
-                iarchive(cereal::make_nvp("packet", *packet));
+                iarchive(cereal::make_nvp("packet", packet));
             }
 
-            Loader::get()->queueInMainThread([callback, packet]() {
-                callback(packet);
+            Loader::get()->queueInMainThread([callback, packet = std::move(packet)]() mutable {
+                callback(std::move(packet));
             });
         };
     }
@@ -85,13 +84,13 @@ public:
     }
 
     template<typename T>
-    inline void send(T* packet, std::function<void()> callback = nullptr) {
+    inline void send(T const& packet, std::function<void()> callback = nullptr) {
         if (!this->isConnected) {
             return;
         }
 
 #ifdef CR_DEBUG
-        log::debug("sending packet {} ({})", packet->getPacketName(), packet->getPacketID());
+        log::debug("sending packet {} ({})", packet.getPacketName(), packet.getPacketID());
 #endif
         std::stringstream ss;
         // cereal uses RAII, meaning
@@ -99,11 +98,11 @@ public:
         // to be filled at the end of the braces
         {
             cereal::JSONOutputArchive oarchive(ss);
-            oarchive(cereal::make_nvp("packet", *packet));
+            oarchive(cereal::make_nvp("packet", packet));
         }
         auto json = matjson::parse(ss.str()).mapErr([](std::string err) { return err; }).unwrap();
-        
-        json["packet_id"] = packet->getPacketID();
+
+        json["packet_id"] = packet.getPacketID();
         auto uncompressedStr = json.dump(0);
         unsigned char* compressedData;
 
@@ -112,13 +111,14 @@ public:
             uncompressedStr.size(),
             &compressedData
         );
+        ix::IXWebSocketSendData data(
+            reinterpret_cast<const char*>(compressedData),
+            compressedSize
+        );
         socket.sendBinary(
-            std::string(std::string_view(
-                reinterpret_cast<const char*>(compressedData),
-                compressedSize
-            )), [callback](int current, int total) {
+            data, [callback = std::move(callback)](int current, int total) mutable {
                 if (current + 1 == total && callback) {
-                    Loader::get()->queueInMainThread([callback]() {
+                    Loader::get()->queueInMainThread([callback = std::move(callback)]() mutable {
                         callback();
                     });
                 }
@@ -138,10 +138,10 @@ protected:
 
     std::unordered_map<
         int,
-        std::function<void(std::string)>
+        geode::Function<void(std::string)>
     > listeners;
 
     std::vector<
-        std::function<void()>
+        geode::Function<void()>
     > packetQueue;
 };

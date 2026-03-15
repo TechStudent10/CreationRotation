@@ -3,9 +3,9 @@
 
 using namespace geode::prelude;
 
-class LobbyJoinPopup : public geode::Popup<> {
+class LobbyJoinPopup : public geode::Popup {
 protected:
-    bool setup() override;
+    bool init() override;
 public:
     static LobbyJoinPopup* create();
 };

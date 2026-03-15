@@ -13,16 +13,16 @@ NetworkManager::NetworkManager() {
     // schedule pinging
     CCScheduler::get()->scheduleUpdateForTarget(this, -1, false);
 
-    this->on<PongPacket>([this](PongPacket*) {
-        responseTime = time(0) - lastPinged;
+    this->on<PongPacket>([this](PongPacket) {
+        responseTime = time(nullptr) - lastPinged;
     });
 }
 
 void NetworkManager::update(float dt) {
     if (!this->isConnected) return;
 
-    if (time(0) - lastPinged < 10) return;
-    lastPinged = time(0);
+    if (time(nullptr) - lastPinged < 10) return;
+    lastPinged = time(nullptr);
 
     this->send(PingPacket::create());
 }
@@ -50,11 +50,11 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
     socket.setTLSOptions(tlsOptions);
 #endif
 
-    socket.setOnMessageCallback([this, callback](const ix::WebSocketMessagePtr& msg) {
+    socket.setOnMessageCallback([this, callback = std::move(callback)](const ix::WebSocketMessagePtr& msg) mutable {
         if (msg->type == ix::WebSocketMessageType::Error) {
-            const auto errReason = msg->errorInfo.reason;
+            auto& errReason = msg->errorInfo.reason;
             log::error("ixwebsocket error: {}", errReason);
-            Loader::get()->queueInMainThread([this, errReason]() {
+            Loader::get()->queueInMainThread([this, errReason = std::move(errReason)]() {
                 FLAlertLayer::create(
                     "CR Error",
                     fmt::format("There was an error while connecting to the server: {}", errReason),
@@ -68,10 +68,10 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
             // call middleware (this should run the provided cb)
             middleware([this, callback]() {
                 // register error packet
-                this->on<ErrorPacket>([](ErrorPacket* packet) {
+                this->on<ErrorPacket>([](ErrorPacket packet) {
                     FLAlertLayer::create(
                         "CR Error",
-                        fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet->error).c_str(),
+                        fmt::format("The Creation Rotation server sent an error: <cy>{}</c>", packet.error).c_str(),
                         "OK"
                     )->show();
                 });
@@ -80,7 +80,7 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
                 callback();
 
                 // send all packets in queue
-                for (auto packetFn : packetQueue) {
+                for (auto& packetFn : packetQueue) {
                     packetFn();
                 }
 
@@ -90,7 +90,7 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
                 this->showDisconnectPopup = true;
                 Loader::get()->queueInMainThread([]() {
                     Notification::create(
-                        "Connection sucessful!",
+                        "Connection successful!",
                         NotificationIcon::Success,
                         1.5f
                     )->show();
@@ -101,8 +101,8 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
         } else if (msg->type == ix::WebSocketMessageType::Close) {
             log::debug("connection closed");
             this->isConnected = false;
-            const auto reason = msg->closeInfo.reason;
-            Loader::get()->queueInMainThread([this, reason]() {
+            auto& reason = msg->closeInfo.reason;
+            Loader::get()->queueInMainThread([this, reason = std::move(reason)]() mutable {
                 Notification::create(
                     "Disconnected from Creation Rotation",
                     NotificationIcon::Error,
@@ -114,8 +114,8 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
                         "Disconnected",
                         fmt::format("You have been disconnected from the Creation Rotation servers. Reason:\n\n{}", reason),
                         "OK", "Close",
-                        [this, reason](auto, bool) {
-                            if (disconnectBtnCallback) disconnectBtnCallback(reason);
+                        [this, reason = std::move(reason)](auto, bool) mutable {
+                            if (disconnectBtnCallback) disconnectBtnCallback(std::move(reason));
                         }
                     );
                 }
@@ -126,7 +126,7 @@ void NetworkManager::connect(bool shouldReconnect, std::function<void()> callbac
             this->onMessage(msg);
         }
     });
-    
+
     this->isConnected = true;
     socket.start();
 }
@@ -148,10 +148,11 @@ void NetworkManager::onMessage(const ix::WebSocketMessagePtr& msg) {
     auto packetStr = strMsg.substr(packetIdIdx + 1);
     auto packetId = geode::utils::numFromString<int>(strMsg.substr(0, packetIdIdx)).unwrapOr(0);
 
-    if (!listeners.contains(packetId)) {
+    auto it = listeners.find(packetId);
+    if (it == listeners.end()) {
         log::error("unhandled packed ID {}", packetId);
         return;
     }
 
-    listeners.at(packetId)(packetStr);
+    it->second(std::move(packetStr));
 }

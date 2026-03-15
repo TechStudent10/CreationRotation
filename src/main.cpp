@@ -40,7 +40,7 @@ $on_mod(Loaded) {
 	auto& nm = NetworkManager::get();
 	nm.middleware = [](std::function<void()> cb) {
 		auto& am = AuthManager::get();
-		am.login([cb]() {
+		am.login([cb = std::move(cb)]() mutable {
 			cb();
 		});
 	};

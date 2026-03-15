@@ -1,10 +1,10 @@
 {
-	"geode": "4.1.2",
+	"geode": "5.3.0",
 	"gd": {
-		"win": "2.2074",
-		"android": "2.2074",
-		"mac": "2.2074",
-		"ios": "2.2074"
+		"win": "2.2081",
+		"android": "2.2081",
+		"mac": "2.2081",
+		"ios": "2.2081"
 	},
 	"id": "techstudent10.creation_rotation",
 	"name": "Creation Rotation",
@@ -19,18 +19,10 @@
 			"resources/certs/*.pem"
 		]
 	},
-	"dependencies": [
-		{
-			"id": "cvolton.level-id-api",
-			"version": ">=v1.1.0",
-			"importance": "required"
-		},
-		{
-            "id": "geode.node-ids",
-            "version": ">=v1.17.0",
-            "importance": "required"
-        }
-	],
+	"dependencies": {
+		"cvolton.level-id-api": ">=v2.0.0",
+		"geode.node-ids": ">=v1.23.0"
+	},
 	"settings": {
 		"server-url": {
 			"name": "Server URL",

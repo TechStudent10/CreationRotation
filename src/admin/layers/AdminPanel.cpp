@@ -5,7 +5,7 @@
 
 AdminPanel* AdminPanel::create() {
     auto ret = new AdminPanel;
-    if (ret->initAnchored(220.f, 265.f)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -13,7 +13,11 @@ AdminPanel* AdminPanel::create() {
     return nullptr;
 }
 
-bool AdminPanel::setup() {
+bool AdminPanel::init() {
+    if (!Popup::init(220.f, 265.f)) {
+        return false;
+    }
+
     this->setTitle("Administrator Panel");
 
     auto usernameInput = TextInput::create(100.f, "Username");

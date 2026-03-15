@@ -37,10 +37,14 @@ void SwapManager::createLobby(LobbySettings lobby, std::function<void(std::strin
 
     auto& nm = NetworkManager::get();
     nm.send(CreateLobbyPacket::create(lobby));
-    nm.on<LobbyCreatedPacket>([this, callback](LobbyCreatedPacket* createdLobby) {
-        this->joinLobby(createdLobby->info.code, [createdLobby, callback]() {
-            callback(createdLobby->info.code);
-        });
+    nm.on<LobbyCreatedPacket>([this, callback](LobbyCreatedPacket createdLobby) {
+        auto code = createdLobby.info.code;
+        this->joinLobby(
+            std::move(code),
+            [createdLobby = std::move(createdLobby), callback]() {
+                callback(std::move(createdLobby.info.code));
+            }
+        );
     });
 }
 
@@ -62,8 +66,8 @@ void SwapManager::getLobbyAccounts(std::function<void(std::vector<Account>)> cal
 
     auto& nm = NetworkManager::get();
     nm.send(GetAccountsPacket::create(this->currentLobbyCode));
-    nm.on<ReceiveAccountsPacket>([this, callback](ReceiveAccountsPacket* accounts) {
-        callback(accounts->accounts);
+    nm.on<ReceiveAccountsPacket>([callback = std::move(callback)](ReceiveAccountsPacket accounts) {
+        callback(std::move(accounts.accounts));
     });
 }
 
@@ -72,8 +76,8 @@ void SwapManager::getLobbyInfo(std::function<void(LobbyInfo)> callback) {
 
     auto& nm = NetworkManager::get();
     nm.send(GetLobbyInfoPacket::create(this->currentLobbyCode));
-    nm.on<ReceiveLobbyInfoPacket>([this, callback](ReceiveLobbyInfoPacket* packet) {
-        callback(packet->info);
+    nm.on<ReceiveLobbyInfoPacket>([callback = std::move(callback)](ReceiveLobbyInfoPacket packet) {
+        callback(std::move(packet.info));
     });
 }
 
@@ -82,7 +86,7 @@ void SwapManager::updateLobby(LobbySettings updatedLobby) {
 
     auto& nm = NetworkManager::get();
 
-    nm.send(UpdateLobbyPacket::create(this->currentLobbyCode, updatedLobby));
+    nm.send(UpdateLobbyPacket::create(this->currentLobbyCode, std::move(updatedLobby)));
 }
 
 void SwapManager::disconnectLobby() {
@@ -99,7 +103,7 @@ void SwapManager::disconnectLobby() {
 
 // LEVEL SWAP //
 
-void SwapManager::startSwap(SwapStartedPacket* packet) {
+void SwapManager::startSwap(SwapStartedPacket packet) {
     getLobbyInfo([this](LobbyInfo info) {
         secondsPerRound = info.settings.minutesPerTurn * 60;
     });
@@ -111,7 +115,7 @@ void SwapManager::startSwap(SwapStartedPacket* packet) {
 
     registerListeners();
 
-    roundStartedTime = time(0);
+    roundStartedTime = time(nullptr);
 
     auto scene = EditLevelLayer::scene(newLvl);
     cr::utils::replaceScene(scene);
@@ -124,7 +128,7 @@ void SwapManager::registerListeners() {
 
     nm.setDisconnectCallback([](std::string reason) {});
 
-    nm.on<TimeToSwapPacket>([this](TimeToSwapPacket* p) {
+    nm.on<TimeToSwapPacket>([this](TimeToSwapPacket p) {
         auto& nm = NetworkManager::get();
 
         Notification::create("Swapping levels!", NotificationIcon::Info, 2.5f)->show();
@@ -152,7 +156,7 @@ void SwapManager::registerListeners() {
         };
 
         nm.send(
-            SendLevelPacket::create(lvlData)
+            SendLevelPacket::create(std::move(lvlData))
         );
 
         if (lvl && Mod::get()->getSettingValue<bool>("delete-lvls")) {
@@ -160,7 +164,7 @@ void SwapManager::registerListeners() {
             GameLevelManager::sharedState()->deleteLevel(lvl);
         }
     });
-    nm.on<ReceiveSwappedLevelPacket>([this](ReceiveSwappedLevelPacket* packet) {
+    nm.on<ReceiveSwappedLevelPacket>([this](ReceiveSwappedLevelPacket packet) {
         // if (packet->levels.size() < swapIdx) {
         //     FLAlertLayer::create(
         //         "Creation Rotation",
@@ -171,10 +175,10 @@ void SwapManager::registerListeners() {
         // }
         LevelData lvlData;
 
-        for (auto swappedLevel : packet->levels) {
+        for (auto& swappedLevel : packet.levels) {
             if (swappedLevel.accountID != cr::utils::createAccountType().accountID) continue;
 
-            lvlData = swappedLevel.level;
+            lvlData = std::move(swappedLevel.level);
             break;
         }
 
@@ -189,7 +193,7 @@ void SwapManager::registerListeners() {
         lvl->dataLoaded(b);
 
         lvl->m_levelType = GJLevelType::Editor;
-        
+
         levelId = EditorIDs::getID(lvl);
         LocalLevelManager::get()->m_localLevels->insertObject(lvl, 0);
 
@@ -202,9 +206,9 @@ void SwapManager::registerListeners() {
         } catch (std::exception e) {}
         #endif
 
-        roundStartedTime = time(0);
+        roundStartedTime = time(nullptr);
     });
-    nm.on<SwapEndedPacket>([this](SwapEndedPacket* p) {
+    nm.on<SwapEndedPacket>([this](SwapEndedPacket p) {
         log::debug("swap ended; disconnecting from server");
         auto& nm = NetworkManager::get();
         nm.showDisconnectPopup = false;
@@ -222,5 +226,5 @@ int SwapManager::getTimeRemaining() {
         return 0;
     }
 
-    return (roundStartedTime + secondsPerRound) - time(0);
+    return (roundStartedTime + secondsPerRound) - time(nullptr);
 }

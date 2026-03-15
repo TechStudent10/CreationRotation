@@ -4,7 +4,7 @@
 
 ChatPanel* ChatPanel::create() {
     auto ret = new ChatPanel;
-    if (ret->initAnchored(350.f, 280.f)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -14,18 +14,22 @@ ChatPanel* ChatPanel::create() {
 
 void ChatPanel::initialize() {
     // initialize the listeners n' stuff if they havent already
-    if (!ChatPanel::hasInitialized) {
+    if (!hasInitialized) {
         auto& nm = NetworkManager::get();
-        nm.on<MessageSentPacket>([](MessageSentPacket* packet) {
-            ChatPanel::messages.push_back(packet->message);
-            ChatPanel::messagesQueue.push_back(packet->message);
+        nm.on<MessageSentPacket>([](MessageSentPacket packet) {
+            messages.push_back(packet.message);
+            messagesQueue.push_back(std::move(packet.message));
         });
 
-        ChatPanel::hasInitialized = true;
+        hasInitialized = true;
     }
 }
 
-bool ChatPanel::setup() {
+bool ChatPanel::init() {
+    if (!Popup::init(350.f, 280.f)) {
+        return false;
+    }
+
     this->setTitle("Chat");
 
     ChatPanel::initialize();
@@ -93,7 +97,7 @@ bool ChatPanel::setup() {
     return true;
 }
 
-void ChatPanel::renderMessage(Message message) {
+void ChatPanel::renderMessage(Message const& message) {
     auto msgNode = CCNode::create();
     auto msgText = TextArea::create(
         fmt::format("<cy>{}</c>: {}", message.author.name, message.message),
@@ -117,18 +121,18 @@ void ChatPanel::renderMessage(Message message) {
 }
 
 void ChatPanel::updateMessages(float dt) {
-    for (auto message : ChatPanel::messagesQueue) {
+    for (auto const& message : messagesQueue) {
         renderMessage(message);
     }
-    ChatPanel::messagesQueue.clear();
+    messagesQueue.clear();
 }
 
 void ChatPanel::clearMessages() {
-    ChatPanel::messages.clear();
+    messages.clear();
 
     auto& nm = NetworkManager::get();
     nm.unbind<MessageSentPacket>();
-    ChatPanel::hasInitialized = false;
+    hasInitialized = false;
 }
 
 void ChatPanel::sendMessage() {
@@ -142,11 +146,11 @@ void ChatPanel::sendMessage() {
     messageInput->setString("");
 }
 
-void ChatPanel::keyDown(cocos2d::enumKeyCodes keycode) {
+void ChatPanel::keyDown(cocos2d::enumKeyCodes keycode, double timestamp) {
     if (keycode == cocos2d::KEY_Enter && CCIMEDispatcher::sharedDispatcher()->hasDelegate()) {
         log::debug("sending via keybind");
         sendMessage();
     } else {
-        geode::Popup<>::keyDown(keycode);
+        Popup::keyDown(keycode, timestamp);
     }
 }

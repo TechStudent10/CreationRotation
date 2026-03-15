@@ -11,7 +11,7 @@ class CreateLobbyPacket : public Packet {
     CR_PACKET(2001, CreateLobbyPacket)
 
     CreateLobbyPacket(LobbySettings settings):
-        settings(settings) {}
+        settings(std::move(settings)) {}
 
     LobbySettings settings;
 
@@ -25,9 +25,9 @@ class JoinLobbyPacket : public Packet {
     CR_PACKET(2002, JoinLobbyPacket)
 
     JoinLobbyPacket(std::string code, Account account):
-        code(code),
-        account(account) {}
-    
+        code(std::move(code)),
+        account(std::move(account)) {}
+
     std::string code;
     Account account;
 
@@ -42,7 +42,7 @@ class GetAccountsPacket : public Packet {
     CR_PACKET(2003, GetAccountsPacket)
 
     GetAccountsPacket(std::string code):
-        code(code) {}
+        code(std::move(code)) {}
 
     std::string code;
 
@@ -56,7 +56,7 @@ class GetLobbyInfoPacket : public Packet {
     CR_PACKET(2004, GetLobbyInfoPacket)
 
     GetLobbyInfoPacket(std::string code):
-        code(code) {}
+        code(std::move(code)) {}
 
     std::string code;
 
@@ -77,8 +77,8 @@ class UpdateLobbyPacket : public Packet {
     CR_PACKET(2006, UpdateLobbyPacket)
 
     UpdateLobbyPacket(std::string code, LobbySettings settings):
-        code(code),
-        settings(settings) {}
+        code(std::move(code)),
+        settings(std::move(settings)) {}
 
     std::string code;
     LobbySettings settings;
@@ -115,7 +115,7 @@ class SendMessagePacket : public Packet {
     CR_PACKET(2010, SendMessagePacket)
 
     SendMessagePacket(std::string message) :
-        message(message) {}
+        message(std::move(message)) {}
 
     std::string message;
 
@@ -130,7 +130,7 @@ class StartSwapPacket : public Packet {
     CR_PACKET(2007, StartSwapPacket)
 
     StartSwapPacket(std::string code):
-        code(code) {}
+        code(std::move(code)) {}
 
     std::string code;
 
@@ -143,7 +143,7 @@ class SendLevelPacket : public Packet {
     CR_PACKET(3001, SendLevelPacket)
 
     SendLevelPacket(LevelData level):
-        level(level) {}
+        level(std::move(level)) {}
 
     LevelData level;
 
@@ -158,8 +158,8 @@ class BanUserPacket : public Packet {
     CR_PACKET(5002, BanUserPacket)
 
     BanUserPacket(std::string username, std::string reason):
-        reason(reason),
-        username(username) {}
+        reason(std::move(reason)),
+        username(std::move(username)) {}
 
     std::string username;
     std::string reason;
@@ -187,7 +187,7 @@ class AuthorizeUserPacket : public Packet {
     CR_PACKET(5003, AuthorizeUserPacket)
 
     AuthorizeUserPacket(std::string password):
-        password(password) {}
+        password(std::move(password)) {}
 
     std::string password;
 
@@ -205,7 +205,7 @@ class LoginPacket : public Packet {
     Account account = cr::utils::createAccountType();
 
     LoginPacket(std::string token) :
-        token(token) {}
+        token(std::move(token)) {}
 
     std::string token;
 
@@ -233,7 +233,7 @@ class VerifyAuthPacket : public Packet {
     CR_PACKET(5005, VerifyAuthPacket)
 
     VerifyAuthPacket(Account account) :
-        account(account) {}
+        account(std::move(account)) {}
 
     Account account;
 

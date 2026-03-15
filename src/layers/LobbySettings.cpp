@@ -137,9 +137,9 @@ public:
     }
 };
 
-LobbySettingsPopup* LobbySettingsPopup::create(LobbySettings settings, Callback callback) {
+LobbySettingsPopup* LobbySettingsPopup::create(LobbySettings const& settings, Callback callback) {
     auto ret = new LobbySettingsPopup;
-    if (ret->initAnchored(250.f, 230.f, settings, callback)) {
+    if (ret->init(settings, std::move(callback))) {
         ret->autorelease();
         return ret;
     }
@@ -147,7 +147,11 @@ LobbySettingsPopup* LobbySettingsPopup::create(LobbySettings settings, Callback 
     return nullptr;
 }
 
-bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
+bool LobbySettingsPopup::init(LobbySettings const& settings, Callback callback) {
+    if (!Popup::init(250.f, 230.f)) {
+        return false;
+    }
+
     m_noElasticity = true;
     this->setTitle("Lobby Settings");
 
@@ -202,7 +206,7 @@ bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
         {0, 0, 0, 75},
         {220.f, 180.f}
     );
-    if(CCScale9Sprite* borderSprite = typeinfo_cast<CCScale9Sprite*>(border->getChildByID("geode.loader/border_sprite"))) {
+    if(auto borderSprite = typeinfo_cast<NineSlice*>(border->getChildByID("geode.loader/border_sprite"))) {
         float scaleFactor = 1.7f;
         borderSprite->setContentSize(CCSize{borderSprite->getContentSize().width, borderSprite->getContentSize().height + 3} / scaleFactor);
         borderSprite->setScale(scaleFactor);
@@ -214,9 +218,9 @@ bool LobbySettingsPopup::setup(LobbySettings settings, Callback callback) {
 
     auto submitBtn = CCMenuItemExt::createSpriteExtra(
         ButtonSprite::create("Submit"),
-        [this, settingsContents, callback](CCObject* sender) {
+        [this, settingsContents, callback = std::move(callback)](CCObject* sender) mutable {
             this->onClose(this->m_closeBtn);
-            
+
             LobbySettings newSettings = SwapManager::createDefaultSettings();
 
             for (auto cell : CCArrayExt<LobbySettingsCell*>(settingsContents)) {

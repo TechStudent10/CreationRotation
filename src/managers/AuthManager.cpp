@@ -6,7 +6,7 @@
 AuthManager::AuthManager() {
     auto& nm = NetworkManager::get();
 
-    nm.on<InvalidTokenPacket>([this](InvalidTokenPacket*) {
+    nm.on<InvalidTokenPacket>([this](InvalidTokenPacket) {
         geode::createQuickPopup(
             "Creation Rotation",
             "The server received an <cr>invalid token</c>. Would you like to reauthenticate with the server?",
@@ -19,7 +19,7 @@ AuthManager::AuthManager() {
         );
     });
 
-    nm.on<LoginNotReceivedPacket>([this](LoginNotReceivedPacket*) {
+    nm.on<LoginNotReceivedPacket>([this](LoginNotReceivedPacket) {
         geode::createQuickPopup(
             "Creation Rotation",
             "The server <cr>did not receive</c> login information. Would you like to send it now?",
@@ -40,24 +40,24 @@ void AuthManager::beginAuthorization(std::function<void()> callback) {
             cr::utils::createAccountType().accountID
         )
     );
-    nm.on<ReceiveAuthCodePacket>([this](ReceiveAuthCodePacket* packet) {
+    nm.on<ReceiveAuthCodePacket>([this](ReceiveAuthCodePacket packet) {
         auto glm = GameLevelManager::sharedState();
         glm->m_uploadMessageDelegate = this;
         glm->uploadUserMessage(
-            packet->botAccID,
-            packet->code,
+            packet.botAccID,
+            std::move(packet.code),
             "Creation Rotation Identity Verification. This message can be safely deleted."
         );
     });
-    nm.on<ReceiveTokenPacket>([this, callback](ReceiveTokenPacket* packet) {
-        this->setToken(packet->token);
+    nm.on<ReceiveTokenPacket>([this, callback](ReceiveTokenPacket packet) {
+        this->setToken(std::move(packet.token));
         this->login(callback);
     });
 }
 
 void AuthManager::login(std::function<void()> callback) {
-    if (this->getToken() == "") {
-        this->beginAuthorization(callback);
+    if (this->getToken().empty()) {
+        this->beginAuthorization(std::move(callback));
         return;
     }
 
@@ -65,7 +65,7 @@ void AuthManager::login(std::function<void()> callback) {
     nm.send(
         LoginPacket::create(this->getToken())
     );
-    nm.on<LoggedInPacket>([callback](LoggedInPacket*) {
+    nm.on<LoggedInPacket>([callback](LoggedInPacket) mutable {
         callback();
     });
 }

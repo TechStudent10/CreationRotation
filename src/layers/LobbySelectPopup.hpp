@@ -4,11 +4,11 @@
 
 using namespace geode::prelude;
 
-class CR_DLL LobbySelectPopup : public geode::Popup<> {
+class CR_DLL LobbySelectPopup : public geode::Popup {
 protected:
-    Border* lobbyList;
+    Border* lobbyList = nullptr;
 
-    bool setup() override;
+    bool init() override;
     void refresh(bool isFirstTime = false);
 public:
     static LobbySelectPopup* create();

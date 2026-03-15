@@ -4,11 +4,11 @@
 
 using namespace geode::prelude;
 
-using Callback = std::function<void(LobbySettings)>;
+using Callback = geode::Function<void(LobbySettings)>;
 
-class LobbySettingsPopup : public geode::Popup<LobbySettings, Callback> {
+class LobbySettingsPopup : public geode::Popup {
 protected:
-    bool setup(LobbySettings, Callback) override;
+    bool init(LobbySettings const&, Callback);
 public:
-    static LobbySettingsPopup* create(LobbySettings, Callback);
+    static LobbySettingsPopup* create(LobbySettings const&, Callback);
 };

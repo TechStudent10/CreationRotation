@@ -9,7 +9,7 @@
 
 AuthPopup* AuthPopup::create() {
     auto ret = new AuthPopup;
-    if (ret->initAnchored(140.f, 140.f)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -17,7 +17,11 @@ AuthPopup* AuthPopup::create() {
     return nullptr;
 }
 
-bool AuthPopup::setup() {
+bool AuthPopup::init() {
+    if (!Popup::init(140.f, 140.f)) {
+        return false;
+    }
+
     m_noElasticity = true;
     this->setTitle("Admin Authorization");
 
@@ -41,7 +45,7 @@ bool AuthPopup::setup() {
         }
     );
 
-    nm.on<AuthorizedUserPacket>([this](AuthorizedUserPacket*) {
+    nm.on<AuthorizedUserPacket>([this](AuthorizedUserPacket) {
         AdminPanel::create()->show();
     });
 

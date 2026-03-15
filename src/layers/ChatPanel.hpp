@@ -4,7 +4,7 @@
 
 using namespace geode::prelude;
 
-class ChatPanel : public geode::Popup<> {
+class ChatPanel : public geode::Popup {
 protected:
     float m_width;
     float m_height;
@@ -13,16 +13,16 @@ protected:
     inline static std::vector<Message> messages = {};
     inline static std::vector<Message> messagesQueue = {};
 
-    ScrollLayer* scrollLayer;
-    TextInput* messageInput;
+    ScrollLayer* scrollLayer = nullptr;
+    TextInput* messageInput = nullptr;
 
-    bool setup() override;
+    bool init() override;
 
     void sendMessage();
-    void renderMessage(Message message);
+    void renderMessage(Message const& message);
     void updateMessages(float dt);
 
-    void keyDown(cocos2d::enumKeyCodes) override;
+    void keyDown(cocos2d::enumKeyCodes, double) override;
 public:
     static ChatPanel* create();
 

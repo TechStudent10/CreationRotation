@@ -3,9 +3,9 @@
 
 using namespace geode::prelude;
 
-class AuthPopup : public geode::Popup<> {
+class AuthPopup : public geode::Popup {
 protected:
-    bool setup() override;
+    bool init() override;
 public:
     static AuthPopup* create();
 };

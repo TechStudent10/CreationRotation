@@ -13,7 +13,7 @@ public:
         static SwapManager instance;
         return instance;
     }
-    
+
     std::string currentLobbyCode;
 
     void joinLobby(std::string code, std::function<void()> callback = []() {});
@@ -35,7 +35,7 @@ public:
 
     int levelId;
 
-    void startSwap(SwapStartedPacket* packet);
+    void startSwap(SwapStartedPacket packet);
 
     void registerListeners();
     int getTimeRemaining();

@@ -2,12 +2,13 @@
 
 using namespace geode::prelude;
 
-class StatusPopup : geode::Popup<std::string> {
+class StatusPopup : geode::Popup {
 protected:
-    CCLabelBMFont* statusLabel;
-    bool setup(std::string title) override;
-public:
-    void setStatus(std::string status);
+    CCLabelBMFont* statusLabel = nullptr;
+    bool init(ZStringView title);
 
-    static StatusPopup* create(std::string title);
+public:
+    void setStatus(ZStringView status);
+
+    static StatusPopup* create(ZStringView title);
 };

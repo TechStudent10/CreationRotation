@@ -28,7 +28,7 @@ endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_compile_definitions(WIN32_LEAN_AND_MEAN=1)
-    target_link_libraries(${PROJECT_NAME} Crypt32)
+    target_link_libraries(${PROJECT_NAME} crypt32)
 endif()
 
 set(USE_ZLIB OFF)
@@ -45,12 +45,12 @@ set(MBEDTLS_AS_SUBPROJECT OFF)
 set(DISABLE_PACKAGE_CONFIG_AND_INSTALL OFF)
 set(MBEDTLS_FATAL_WARNINGS OFF)
 
-CPMAddPackage("gh:TechStudent10/mbedtls#fc79213")
-
+CPMAddPackage("gh:TechStudent10/mbedtls#4d80dd5")
 set(MBEDTLS_INCLUDE_DIRS "${mbedtls_SOURCE_DIR}/include")
 set(MBEDTLS_LIBRARY "mbedtls")
 set(MBEDX509_LIBRARY "mbedx509")
 set(MBEDCRYPTO_LIBRARY "mbedcrypto")
+set(MBEDTLS_LIBRARIES ${MBEDTLS_LIBRARY} ${MBEDX509_LIBRARY} ${MBEDCRYPTO_LIBRARY})
 
 CPMAddPackage("gh:machinezone/IXWebSocket#dc8807e")
 install(TARGETS mbedtls mbedx509 mbedcrypto EXPORT mbedtls-targets)
@@ -65,7 +65,15 @@ endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE CR_EXPORTING)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${ixwebsocket_SOURCE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/cereal/include")
+
+CPMAddPackage(
+    NAME cereal
+    GITHUB_REPOSITORY USCiLab/cereal
+    GIT_TAG 22a1b36
+    DOWNLOAD_ONLY ON
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE "${cereal_SOURCE_DIR}/include")
 
 target_link_libraries(${PROJECT_NAME} ixwebsocket)
 

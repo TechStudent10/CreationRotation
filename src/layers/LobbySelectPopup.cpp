@@ -86,7 +86,7 @@ public:
 
 LobbySelectPopup* LobbySelectPopup::create() {
     auto ret = new LobbySelectPopup;
-    if (ret->initAnchored(370.f, 265.f)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -94,7 +94,11 @@ LobbySelectPopup* LobbySelectPopup::create() {
     return nullptr;
 }
 
-bool LobbySelectPopup::setup() {
+bool LobbySelectPopup::init() {
+    if (!Popup::init(370.f, 265.f)) {
+        return false;
+    }
+
     this->setTitle("Creation Rotation");
     this->setID("select-popup"_spr);
 
@@ -129,10 +133,10 @@ bool LobbySelectPopup::setup() {
             LobbySettings defaultSettings = SwapManager::createDefaultSettings();
             LobbySettingsPopup::create(defaultSettings, [this](LobbySettings settings) {
                 auto& lm = SwapManager::get();
-                lm.createLobby(settings, [](std::string code) {
+                lm.createLobby(std::move(settings), [](std::string code) {
                     auto scene = CCScene::create();
                     scene->addChild(
-                        LobbyLayer::create(code)
+                        LobbyLayer::create(std::move(code))
                     );
                     cr::utils::goToScene(scene);
                 });
@@ -165,13 +169,13 @@ bool LobbySelectPopup::setup() {
 void LobbySelectPopup::refresh(bool isFirstTime) {
     auto& nm = NetworkManager::get();
     nm.send(GetPublicLobbiesPacket::create());
-    nm.on<ReceivePublicLobbiesPacket>([this, isFirstTime](ReceivePublicLobbiesPacket* packet) {
+    nm.on<ReceivePublicLobbiesPacket>([this, isFirstTime](ReceivePublicLobbiesPacket packet) {
         if (!CCScene::get()->getChildByID("select-popup"_spr)) return;
 
         if (!isFirstTime) lobbyList->removeFromParent();
         auto listItems = CCArray::create();
 
-        for (auto lobby : packet->lobbies) {
+        for (auto& lobby : packet.lobbies) {
             listItems->addObject(
                 LobbyItem::create(350.f, lobby, [this]() { this->m_closeBtn->activate(); })
             );

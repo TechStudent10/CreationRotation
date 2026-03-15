@@ -6,7 +6,7 @@
 
 LobbyJoinPopup* LobbyJoinPopup::create() {
     auto ret = new LobbyJoinPopup;
-    if (ret->initAnchored(140.f, 140.f)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -14,7 +14,11 @@ LobbyJoinPopup* LobbyJoinPopup::create() {
     return nullptr;
 }
 
-bool LobbyJoinPopup::setup() {
+bool LobbyJoinPopup::init() {
+    if (!Popup::init(140.f, 140.f)) {
+        return false;
+    }
+
     m_noElasticity = true;
     this->setTitle("Join Lobby");
 
